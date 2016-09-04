@@ -157,7 +157,7 @@ public:
 
     virtual void MouseUp(const b2Vec2 &p);
 
-    void MouseMove(const b2Vec2 &p);
+	virtual void MouseMove(const b2Vec2 &p);
 
     void LaunchBomb();
 

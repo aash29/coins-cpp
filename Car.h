@@ -168,7 +168,7 @@ public:
         
 
         magnetJoints = new std::map<int,b2RevoluteJoint *>;
-        currentBot = &((*bots)[0]);
+        currentCoin = &((*bots)[0]);
     }
 
     int symmHash(short int a, short int b)
@@ -185,7 +185,9 @@ public:
         }
     }
 
-    //coin* body2bot(b2)
+	void MouseMove(const b2Vec2 &p) {
+		m_mouseWorld = p;
+	}
 
 
     void MouseDown(const b2Vec2 &p) {
@@ -214,34 +216,14 @@ public:
 
             b2Body *body = callback.m_fixture->GetBody();
 
-            currentBot = body2Bot(body);
-
-          
-            {
-
-                b2MouseJointDef md;
-                md.bodyA = m_groundBody;
-                md.bodyB = body;
-                md.target = p;
-                md.maxForce = 1000.0f * body->GetMass();
-                m_mouseJoint = (b2MouseJoint *) m_world->CreateJoint(&md);
-                body->SetAwake(true);
-            }
-
+			currentCoin = body2Bot(body);
         }
-
-
-
-		/*
-        for (int i = 0; i < bots->size(); i++) {
-            for (int j = 0; j < 4; j++) {
-                if ((m_mouseWorld - (*bots)[i].magnets[j].pos).Length()<0.2f){
-                    (*bots)[i].magnets[j].active=!(*bots)[i].magnets[j].active;
-                }
-            }
-        }
-		*/
-
+		else
+		{
+			b2Vec2 force = 1000.f*(p - currentCoin->wheel->GetPosition());
+			currentCoin->wheel->ApplyForceToCenter(force,true);
+			g_debugDraw.DrawSegment(currentCoin->wheel->GetWorldCenter(), p, b2Color(1.f, 1.f, 1.f));
+		}
     }
 
 
@@ -249,6 +231,10 @@ public:
     void Step(Settings *settings) {
 
         Test::Step(settings);
+
+		HighlightCurrentCoin();
+
+		DrawArrow();
     }
 
 
@@ -278,9 +264,17 @@ public:
     }
 
 
- 
+	void HighlightCurrentCoin() {
 
+		g_debugDraw.DrawCircle(currentCoin->wheel->GetWorldCenter(), 2.f, b2Color(1.f, 1.f, 1.f));
+	};
  
+	void DrawArrow() {
+
+		g_debugDraw.DrawSegment(currentCoin->wheel->GetWorldCenter(), m_mouseWorld, b2Color(1.f, 1.f, 1.f));
+	}
+
+
 
     static Test *Create() {
         return new Car;
@@ -289,7 +283,7 @@ public:
 
  
 
-    coin *currentBot;
+    coin *currentCoin;
 
     float32 m_speed;
     std::map<int,b2RevoluteJoint *> *magnetJoints;
