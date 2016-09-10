@@ -61,15 +61,17 @@ public:
 
     struct coin {
         int id;
+        int player;
         b2Body *wheel;
 		b2FrictionJoint *fric;
         b2Fixture *fix;
+        b2Color color;
         float buffer[100];
     };
 
-	std::vector<coin> *bots;
+	std::vector<coin> *coins;
     coin *body2Bot(b2Body *b1) {
-        for (std::vector<coin>::iterator bb = bots->begin(); bb != bots->end(); bb++) {
+        for (std::vector<coin>::iterator bb = coins->begin(); bb != coins->end(); bb++) {
             if (b1 == bb->wheel) {
                 return &(*bb);
             }
@@ -79,10 +81,53 @@ public:
 
     };
 
-    coin createCoin(float x, float y, int id) {
+    void sInterface() {
+
+        ImGui::SetNextWindowSize(ImVec2(100, 360),ImGuiSetCond_FirstUseEver);
+        ImGui::SetNextWindowPos(ImVec2(1200,300),ImGuiSetCond_FirstUseEver);
+        ImGui::Begin("Force");
+
+        ImGui::VSliderFloat("Force", ImVec2(100,300),&m_force,0.f,1.f);
+        ImGui::End();
+
+        ImGui::SetNextWindowSize(ImVec2(100, 360),ImGuiSetCond_FirstUseEver);
+        ImGui::SetNextWindowPos(ImVec2(1200,300),ImGuiSetCond_FirstUseEver);
+
+        ImGui::SetNextWindowPos(ImVec2(0, 0),ImGuiSetCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(800, 360),ImGuiSetCond_FirstUseEver);
+
+        ImGui::Begin("Header");
+        ImGui::Text("Player: %i", currentPlayer);
+        ImGui::Text("Message: %s", m_currentMessage);
+        ImGui::End();
+
+        if (m_showMenu) {
+            ImGui::SetNextWindowSize(ImVec2(400, 200),ImGuiSetCond_FirstUseEver);
+            ImGui::SetNextWindowPos(ImVec2(1200,300),ImGuiSetCond_FirstUseEver);
+            ImGui::Begin("Properties");
+            ImGui::SliderFloat("Force multiplier",&m_forceMult,1000.f,5000.f);
+            ImGui::End();
+        }
+
+    }
+
+    int getUID()
+    {
+        static int  i = -1;
+        i++;
+        return i;
+    }
+
+    coin createCoin(float x, float y, int id, int player) {
         coin bb;
 
         bb.id=id;
+        bb.player = player;
+        if (player==0)
+            bb.color = b2Color(1.f,0.f,0.f);
+        else
+            bb.color = b2Color(0.f,1.f,0.f);
+
 
 
         b2CircleShape circle;
@@ -102,9 +147,12 @@ public:
         fd.filter.groupIndex = 2;
 
 
+
         bd.position.Set(x, y);
         bb.wheel = m_world->CreateBody(&bd);
         bb.wheel->CreateFixture(&fd);
+
+
 
 
 		b2FrictionJointDef jf;
@@ -135,15 +183,15 @@ public:
             fd.friction = 0.9f;
 			fd.restitution = 0.7f;
 
-            ground->CreateFixture(&fd);
+            //ground->CreateFixture(&fd);
 
-            float32 groundMap[5][2] = {{-15.0f,-15.0f}, {15.0f, -15.0f}, {15.0f,15.0f}, {-15.f,15.0f} , {-15.0f,-15.0f } };
+            float32 groundMap[5][2] = {{-15.0f,-15.0f}, {15.0f, -15.0f}, {15.0f,15.0f}, {-15.0f,15.0f},{-15.0f,-15.0f}  };
 
             float32 x = 20.0f, y1 = 0.0f, dx = 5.0f;
 
 			float x1 = groundMap[0][0];
             y1 = groundMap[0][1];
-            for (int i = 1; i < 5; ++i) {
+            for (int i = 1; i < 5; i++) {
                 float32 x2 = groundMap[i][0];
                 float32 y2 = groundMap[i][1];
                 shape.Set(b2Vec2(x1, y1), b2Vec2(x2, y2));
@@ -154,21 +202,19 @@ public:
         }
 
 
-
-
         //m_car=createCoin(0.f,2.f);
 
 
-        bots = new std::vector<coin>;
-        bots->push_back(createCoin(0.f, 9.f, 0));
-        bots->push_back(createCoin(0.f, 6.f, 1));
-        bots->push_back(createCoin(0.f, 2.f, 2));
-        bots->push_back(createCoin(-2.f, 2.f, 3));
-        bots->push_back(createCoin(2.f, 2.f, 3));
-        
+        coins = new std::vector<coin>;
+        coins->push_back(createCoin(0.f, 9.f, getUID(),0));
+        coins->push_back(createCoin(0.f, 6.f, getUID(),1));
+        coins->push_back(createCoin(0.f, 2.f, getUID(),0));
+        coins->push_back(createCoin(-2.f, 2.f, getUID(),1));
+        coins->push_back(createCoin(2.f, 2.f, getUID(),0));
+
 
         magnetJoints = new std::map<int,b2RevoluteJoint *>;
-        currentCoin = &((*bots)[0]);
+        m_currentCoin = &((*coins)[0]);
     }
 
     int symmHash(short int a, short int b)
@@ -178,10 +224,35 @@ public:
         return  a << 16 |  b;
     };
 
+    void newTurn()
+    {
+        currentPlayer=(currentPlayer + 1)%2;
+        m_force = 1.0f;
+        m_forceLeft = 1.0f;
+    };
+
 
     void Keyboard(int key) {
-        switch (key) {
 
+        ImGuiIO& io = ImGui::GetIO();
+        if (!io.WantCaptureKeyboard) {
+            switch (key) {
+                case GLFW_KEY_Q:
+                    m_force = b2Min(m_force + 0.05f, m_forceLeft);
+                    break;
+
+                case GLFW_KEY_E:
+                    m_force = b2Max(m_force - 0.05f, 0.f);
+                    break;
+
+                case GLFW_KEY_ENTER:
+                    newTurn();
+                    break;
+
+                case GLFW_KEY_TAB:
+                    m_showMenu = !m_showMenu;
+                    break;
+            }
         }
     }
 
@@ -189,41 +260,57 @@ public:
 		m_mouseWorld = p;
 	}
 
+    void RightMouseDown(const b2Vec2 &p)
+    {
+        m_currentCoin = nullptr;
+
+        m_currentMessage = "lalala";
+
+        //SetCurrent(nullptr);
+        //selectedBots->clear();
+    };
 
     void MouseDown(const b2Vec2 &p) {
         //Test::MouseDown(p);
+        ImGuiIO& io = ImGui::GetIO();
+        if (!io.WantCaptureMouse)
+        {
 
-        m_mouseWorld = p;
+            m_mouseWorld = p;
 
 
-        if (m_mouseJoint != NULL) {
-            return;
+            if (m_mouseJoint != NULL) {
+                return;
+            }
+
+
+            // Make a small box.
+            b2AABB aabb;
+            b2Vec2 d;
+            d.Set(0.001f, 0.001f);
+            aabb.lowerBound = p - d;
+            aabb.upperBound = p + d;
+
+            // Query the world for overlapping shapes.
+            QueryCallback callback(p);
+            m_world->QueryAABB(&callback, aabb);
+
+            if (callback.m_fixture) {
+
+                b2Body *body = callback.m_fixture->GetBody();
+
+                m_currentCoin = body2Bot(body);
+            }
+            else
+            {
+                if (m_currentCoin) {
+                    b2Vec2 f1 = m_force * m_forceMult * (p - m_currentCoin->wheel->GetPosition());
+                    m_currentCoin->wheel->ApplyForceToCenter(f1, true);
+                    m_forceLeft = m_forceLeft - m_force;
+                    m_force = m_forceLeft;
+                }
+            }
         }
-
-
-        // Make a small box.
-        b2AABB aabb;
-        b2Vec2 d;
-        d.Set(0.001f, 0.001f);
-        aabb.lowerBound = p - d;
-        aabb.upperBound = p + d;
-
-        // Query the world for overlapping shapes.
-        QueryCallback callback(p);
-        m_world->QueryAABB(&callback, aabb);
-
-        if (callback.m_fixture) {
-
-            b2Body *body = callback.m_fixture->GetBody();
-
-			currentCoin = body2Bot(body);
-        }
-		else
-		{
-			b2Vec2 force = 1000.f*(p - currentCoin->wheel->GetPosition());
-			currentCoin->wheel->ApplyForceToCenter(force,true);
-			g_debugDraw.DrawSegment(currentCoin->wheel->GetWorldCenter(), p, b2Color(1.f, 1.f, 1.f));
-		}
     }
 
 
@@ -235,6 +322,12 @@ public:
 		HighlightCurrentCoin();
 
 		DrawArrow();
+
+        DrawCoins();
+
+        sInterface();
+
+
     }
 
 
@@ -257,7 +350,7 @@ public:
         }
 
         bool f = true;
-        ImGui::GraphTestWindow((*bots)[0].buffer, 100);
+        ImGui::GraphTestWindow((*coins)[0].buffer, 100);
 
         ImGui::Curve("Curve", ImVec2(600, 200), 10, foo);
 
@@ -265,14 +358,20 @@ public:
 
 
 	void HighlightCurrentCoin() {
-
-		g_debugDraw.DrawCircle(currentCoin->wheel->GetWorldCenter(), 2.f, b2Color(1.f, 1.f, 1.f));
+        if (m_currentCoin)
+		    g_debugDraw.DrawCircle(m_currentCoin->wheel->GetWorldCenter(), 2.f, b2Color(1.f, 1.f, 1.f));
 	};
  
 	void DrawArrow() {
-
-		g_debugDraw.DrawSegment(currentCoin->wheel->GetWorldCenter(), m_mouseWorld, b2Color(1.f, 1.f, 1.f));
+        if (m_currentCoin)
+		    g_debugDraw.DrawSegment(m_currentCoin->wheel->GetWorldCenter(), m_mouseWorld, b2Color(1.f, 1.f, 1.f));
 	}
+
+    void DrawCoins () {
+        for (auto it =  coins->begin(); it != coins->end(); it++) {
+            g_debugDraw.DrawSolidCircle(it->wheel->GetPosition(), 1.5f, b2Vec2(0.f,0.f), it->color);
+        }
+    }
 
 
 
@@ -280,12 +379,18 @@ public:
         return new Car;
     }
 
+    coin *m_currentCoin;
 
- 
+    float32 m_force = 1.f;
+    float32 m_forceLeft = 1.f;
 
-    coin *currentCoin;
+    float32 m_forceMult = 2500.f;
+    float32 m_showMenu = false;
 
-    float32 m_speed;
+    int currentPlayer = 0;
+
+    char* m_currentMessage="";
+
     std::map<int,b2RevoluteJoint *> *magnetJoints;
 };
 

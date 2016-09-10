@@ -736,7 +736,7 @@ void DebugDraw::DrawString(int x, int y, const char *string, ...) {
 
     va_list arg;
     va_start(arg, string);
-    vsprintf_s(buffer, string, arg);
+    vsprintf(buffer, string, arg);
     va_end(arg);
 
     AddGfxCmdText(float(x), h - float(y), TEXT_ALIGN_LEFT, buffer, SetRGBA(230, 153, 153, 255));
@@ -750,7 +750,7 @@ void DebugDraw::DrawString(const b2Vec2 &pw, const char *string, ...) {
 
     va_list arg;
     va_start(arg, string);
-    vsprintf_s(buffer, string, arg);
+    vsprintf(buffer, string, arg);
     va_end(arg);
 
     AddGfxCmdText(ps.x, h - ps.y, TEXT_ALIGN_LEFT, buffer, SetRGBA(230, 153, 153, 255));

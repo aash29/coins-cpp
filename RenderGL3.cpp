@@ -453,8 +453,7 @@ bool RenderGLInit(const char *fontpath) {
     }
 
     // Load font.
-	FILE *fp;
-	int err = fopen_s(&fp, fontpath, "rb");
+	FILE *fp =  fopen( fontpath, "rb");
     if (!fp) return false;
     fseek(fp, 0, SEEK_END);
     int size = (int) ftell(fp);

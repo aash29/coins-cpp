@@ -238,6 +238,8 @@ static void sMouseButton(GLFWwindow *, int32 button, int32 action, int32 mods) {
         if (action == GLFW_PRESS) {
             lastp = g_camera.ConvertScreenToWorld(ps);
             rightMouseDown = true;
+            b2Vec2 pw = g_camera.ConvertScreenToWorld(ps);
+            test->RightMouseDown(pw);
         }
 
         if (action == GLFW_RELEASE) {
@@ -252,7 +254,6 @@ static void sMouseMotion(GLFWwindow *, double xd, double yd) {
 
     b2Vec2 pw = g_camera.ConvertScreenToWorld(ps);
     test->MouseMove(pw);
-
     if (rightMouseDown) {
         b2Vec2 diff = pw - lastp;
         g_camera.m_center.x -= diff.x;
@@ -309,14 +310,16 @@ static void sInterface() {
     bool show_another_window = true;
     int menuWidth = 200;
     ui.mouseOverMenu = false;
-    /*
+
     if (ui.showMenu) {
         ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_FirstUseEver);
         ImGui::Begin("Another Window", &show_another_window);
         ImGui::Text("Hello");
+        float* v;
+        ImGui::VSliderFloat("Force", ImVec2(50,300),v,0.f,1.f);
         ImGui::End();
     }
-     */
+
 }
 /*
 
@@ -425,7 +428,7 @@ int main(int argc, char **argv) {
     }
 
     char title[64];
-    sprintf_s(title, "Coins");
+    sprintf(title, "Coins");
 
 
     mainWindow = glfwCreateWindow(g_camera.m_width, g_camera.m_height, title, NULL, NULL);
@@ -511,7 +514,7 @@ int main(int argc, char **argv) {
         // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug"
 
         sSimulate();
-        sInterface();
+        //sInterface();
 
         // Measure speed
         double time2 = glfwGetTime();
@@ -520,7 +523,7 @@ int main(int argc, char **argv) {
         time1 = time2;
 
         char buffer[32];
-        _snprintf_s(buffer, 32, "%.1f ms", 1000.0 * frameTime);
+        snprintf(buffer, 32, "%.1f ms", 1000.0 * frameTime);
         AddGfxCmdText(5, 5, TEXT_ALIGN_LEFT, buffer, WHITE);
 
         glEnable(GL_BLEND);
