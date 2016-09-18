@@ -5,11 +5,13 @@
       <sourceFolder url="file://$MODULE_DIR$/RenderGL3.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/DebugDraw.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/imgui_impl_glfw_gl3.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/graph2.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/DebugDraw.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Test.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/RenderGL3.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/imgui.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Test.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/graph2.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/imgui.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/main.cpp" isTestSource="false" />

@@ -97,7 +97,7 @@ public:
         ImGui::SetNextWindowSize(ImVec2(800, 360),ImGuiSetCond_FirstUseEver);
 
         ImGui::Begin("Header");
-        ImGui::Text("Player: %i", currentPlayer);
+        ImGui::Text("Player: %i", m_currentPlayer);
         ImGui::Text("Message: %s", m_currentMessage);
         ImGui::End();
 
@@ -226,7 +226,8 @@ public:
 
     void newTurn()
     {
-        currentPlayer=(currentPlayer + 1)%2;
+        m_currentCoin = nullptr;
+        m_currentPlayer=(m_currentPlayer + 1)%2;
         m_force = 1.0f;
         m_forceLeft = 1.0f;
     };
@@ -299,7 +300,9 @@ public:
 
                 b2Body *body = callback.m_fixture->GetBody();
 
-                m_currentCoin = body2Bot(body);
+                if (body2Bot(body)->player==m_currentPlayer){
+                    m_currentCoin = body2Bot(body);
+                }
             }
             else
             {
@@ -387,7 +390,7 @@ public:
     float32 m_forceMult = 2500.f;
     float32 m_showMenu = false;
 
-    int currentPlayer = 0;
+    int m_currentPlayer = 0;
 
     char* m_currentMessage="";
 

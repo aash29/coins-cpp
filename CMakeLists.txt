@@ -5,13 +5,13 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 
 include_directories(/usr/include/Box2D /home/aash29/cpp/coins-cpp)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -W -Wall -Wextra -g")
-set(SOURCE_FILES main.cpp Test.cpp DebugDraw.cpp RenderGL3.cpp TestEntries.cpp imgui.cpp imgui_draw.cpp imgui_impl_glfw_gl3.cpp curve.cpp)
+set(SOURCE_FILES main.cpp Test.cpp DebugDraw.cpp RenderGL3.cpp TestEntries.cpp imgui.cpp imgui_draw.cpp imgui_impl_glfw_gl3.cpp curve.cpp graph2.cpp graph2.h)
 
 set(SOURCE_DIR /home/aash29/cpp/coins-cpp)
 
 include_directories(${SOURCE_DIR})
 
-add_executable(coins ${SOURCE_FILES})
+add_executable(coins ${SOURCE_FILES} graph2.h)
 
 find_package(GLEW)
 

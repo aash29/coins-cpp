@@ -16,6 +16,8 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
+#include "graph2.h"
+
 #include "imgui.h"
 #include "RenderGL3.h"
 #include "DebugDraw.h"
@@ -414,6 +416,10 @@ imguiEndFrame();
 
 //
 int main(int argc, char **argv) {
+
+
+    testCgraph();
+
 #if defined(_WIN32)
     // Enable memory-leak reports
     _CrtSetDbgFlag(_CRTDBG_LEAK_CHECK_DF | _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG));
