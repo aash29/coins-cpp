@@ -11,12 +11,16 @@
 #include <algorithm>
 
 
+
+
     class CGraph {
 
 
     public:
-        CGraph(std::vector<std::vector<int>> iGraph);
-		std::vector<std::vector<int>> findCycles2();
+
+        CGraph(std::vector<std::vector<int>> iGraph, std::vector<b2Vec2> iVertices);
+
+        std::vector<std::vector<int>> findCycles2();
         void printNeighbors();
 
 
@@ -30,10 +34,12 @@
 		int steepestNeighbor(int leftmost);
 		int getNextCWNeighbor(int i, int p);
 		float angle(b2Vec2 a, b2Vec2 b, b2Vec2 center);
- 
+		std::vector<int> cycle_red(std::vector<int> cycle, int n);
+        std::vector<b2Vec2> cycleToPolygon2(std::vector<int> cycle);
 
 };
 
 void testCgraph();
+
 
 #endif //COINS_GRAPH2_H
