@@ -26,6 +26,10 @@
 #include "graph.h"
 #include "DebugDraw.h"
 
+#include "coinsLog.h"
+#include "graph2.h"
+
+
 
 class QueryCallback : public b2QueryCallback {
 public:
@@ -54,6 +58,8 @@ public:
     b2Fixture *m_fixture;
 };
 
+
+
 // This is a fun demo that shows off the wheel joint
 class Car : public Test {
 public:
@@ -70,6 +76,7 @@ public:
     };
 
 	std::vector<coin> *coins;
+
     coin *body2Bot(b2Body *b1) {
         for (std::vector<coin>::iterator bb = coins->begin(); bb != coins->end(); bb++) {
             if (b1 == bb->wheel) {
@@ -108,6 +115,8 @@ public:
             ImGui::SliderFloat("Force multiplier",&m_forceMult,1000.f,5000.f);
             ImGui::End();
         }
+
+        coinsLog.Draw("Log");
 
     }
 
@@ -199,6 +208,7 @@ public:
                 y1 = y2;
                 x1 = x2;
             }
+
         }
 
 
@@ -331,6 +341,9 @@ public:
         sInterface();
 
 
+
+
+
     }
 
 
@@ -379,7 +392,10 @@ public:
 
 
     static Test *Create() {
-        return new Car;
+
+        Car* c1 = new Car();
+        testCgraph(&(c1->coinsLog));
+        return c1;
     }
 
     coin *m_currentCoin;
@@ -392,9 +408,10 @@ public:
 
     int m_currentPlayer = 0;
 
+    AppLog coinsLog;
+
     char* m_currentMessage="";
 
-    std::map<int,b2RevoluteJoint *> *magnetJoints;
 };
 
 #endif

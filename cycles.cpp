@@ -1,53 +1,23 @@
-using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
-using System;
-using System.IO;
 
-using System.Linq;
+#include <vector>
+#include <Box2D.h>
+
+class cycles {
 
 
-using akCyclesInUndirectedGraphs;
-using EPPZGeometry;
+	 float proximityRadius=4.0f;
 
-public class cycles : MonoBehaviour {
+	 bool calculatedCyclesThisPush=true;
 
-	String logName;
+	std::vector<std::vector<int>> cyclesList = std::vector<std::vector<int>>[2];
 
-	public float proximityRadius=4.0f;
+	std::vector<std::vector<b2Vec2>> coinCycles = std::vector<std::vector<b2Vec2>>[2];
 
-	public bool calculatedCyclesThisPush=true;
+	std::vector<std::vector<b2Vec2>> edges = std::vector<std::vector<b2Vec2>>[2];
 
-	StreamWriter sw;
-	
-	static Material lineMaterial;
+	std::vector<b2Vec2> allVertices = std::vector<b2Vec2>[2];
 
-	List<List<int>>[] cyclesList = new List<List<int>>[2];
 
-	List<List<Vector3>>[] coinCycles = new List<List<Vector3>>[2];
-
-	List<List<Vector3>>[] edges = new List<List<Vector3>>[2];
-
-	List<Vector3>[] allVertices = new List<Vector3>[2];
-
-	static void CreateLineMaterial ()
-	{
-		if (!lineMaterial)
-		{
-			// Unity has a built-in shader that is useful for drawing
-			// simple colored things.
-			 lineMaterial = new Material ("Shader \"Lines/Colored Blended\" {" +
-            "SubShader { Pass { " +
-            "    Blend SrcAlpha OneMinusSrcAlpha " +
-            "    ZWrite Off Cull Off Fog { Mode Off } " +
-            "    BindChannels {" +
-            "      Bind \"vertex\", vertex Bind \"color\", color }" +
-            "} } }");
-            lineMaterial.hideFlags = HideFlags.HideAndDontSave;
-            lineMaterial.shader.hideFlags = HideFlags.HideAndDontSave;
-
-		}
-	}
 
 
 	void Start()
@@ -63,32 +33,32 @@ public class cycles : MonoBehaviour {
 
 
 
-	public bool IsPointInPolygon( Vector3 p, Vector3[] polygon )
+	 bool IsPointInPolygon( b2Vec2 p, std::vector<b2Vec2> polygon )
 	    {
 	        double minX = polygon[ 0 ].x;
 	        double maxX = polygon[ 0 ].x;
-	        double minY = polygon[ 0 ].z;
-	        double maxY = polygon[ 0 ].z;
-	        for ( int i = 1 ; i < polygon.Length ; i++ )
+	        double minY = polygon[ 0 ].y;
+	        double maxY = polygon[ 0 ].y;
+	        for ( int i = 1 ; i < polygon.size() ; i++ )
 	        {
-	            Vector3 q = polygon[ i ];
-	            minX = Math.Min( q.x, minX );
-	            maxX = Math.Max( q.x, maxX );
-	            minY = Math.Min( q.z, minY );
-	            maxY = Math.Max( q.z, maxY );
+	            b2Vec2 q = polygon[ i ];
+	            minX = std::min( q.x, minX );
+	            maxX = std::max( q.x, maxX );
+	            minY = std::min( q.y, minY );
+	            maxY = std::max( q.y, maxY );
 	        }
 
-	        if ( p.x < minX || p.x > maxX || p.z < minY || p.z > maxY )
+	        if ( p.x < minX || p.x > maxX || p.y < minY || p.y > maxY )
 	        {
 	            return false;
 	        }
 
 	        // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
 	        bool inside = false;
-	        for ( int i = 0, j = polygon.Length - 1 ; i < polygon.Length ; j = i++ )
+	        for ( int i = 0, j = polygon.size() - 1 ; i < polygon.size() ; j = i++ )
 	        {
-	            if ( ( polygon[ i ].z > p.z ) != ( polygon[ j ].z > p.z ) &&
-	                 p.x < ( polygon[ j ].x - polygon[ i ].x ) * ( p.z - polygon[ i ].z ) / ( polygon[ j ].z - polygon[ i ].z ) + polygon[ i ].x )
+	            if ( ( polygon[ i ].y > p.y ) != ( polygon[ j ].y > p.y ) &&
+	                 p.x < ( polygon[ j ].x - polygon[ i ].x ) * ( p.y - polygon[ i ].y ) / ( polygon[ j ].y - polygon[ i ].y ) + polygon[ i ].x )
 	            {
 	                inside = !inside;
 	            }
@@ -98,39 +68,24 @@ public class cycles : MonoBehaviour {
 	    }
 
 
-	public bool IsPolygonInPolygon( Vector3[] p1, Vector3[] p2 )
+	public bool IsPolygonInPolygon( std::vector<b2Vec2> p1, std::vector<b2Vec2> p2 )
 	{
 
 
-		for (int i =0; i<p1.Length;i++)
+		for (int i =0; i<p1.size();i++)
 			if (!IsPointInPolygon(p1[i],p2))
 			    return false;
 
 		return true;
 	}
+/*
 
-
-	void deleteTrappedCoins(int player, List<List<Vector3>> cCycles)
+	void deleteTrappedCoins(int player, std::vector<std::vector<b2Vec2>> cCycles)
 	{
 		var coins = GameObject.FindGameObjectsWithTag("coin");
 
-		List<int> protectedCycles = new List<int>();
+		std::vector<int> protectedCycles = new std::vector<int>();
 
-		/*
-
-		for (int j = 0; j < coinCycles[player % 2].Count; j++)
-		{
-			for (int k = 0; k < coinCycles[player % 2].Count; k++)
-			{
-				if (IsPolygonInPolygon(coinCycles[player % 2][j].ToArray(), coinCycles[player % 2][k].ToArray()))
-                    {
-						protectedCycles.Add(j);
-					}
-            }
-
-		}
-
-		*/
 
 		
 
@@ -199,7 +154,7 @@ public class cycles : MonoBehaviour {
 
 	public void cleanup()
 	{
-		List<GameObject> deadCoins = Multitag.FindGameObjectsWithTag ("dead").ToList ();
+		std::vector<GameObject> deadCoins = Multitag.FindGameObjectsWithTag ("dead").ToList ();
 
 		for (int i=deadCoins.Count-1; i>-1; i--) 
 		{
@@ -210,7 +165,9 @@ public class cycles : MonoBehaviour {
 			Destroy (c1);
 		}
 	}
+*/
 
+/*
 	public void Update()
 	{
 		//sw.Close ();
@@ -219,21 +176,7 @@ public class cycles : MonoBehaviour {
 
 		GameObject.Find("root1").GetComponent<setupLevel>().initCoins();
         bool atRest=true;
-        /*
-		foreach (var c1 in (GameObject.FindGameObjectsWithTag ("coin")))
-		{
-			if (c1.transform.position.y<-1.0f)
-				c1.GetComponent<Multitag> ().TagsSet.Add("dead");
 
-			if (!c1.GetComponent<Rigidbody>().IsSleeping())
-			{
-				atRest=false;
-				calculatedCyclesThisPush = false;
-			}
-		}
-
-        */
-		//if ((atRest) && (!calculatedCyclesThisPush)) {
 		FindCycles (0, ref coinCycles [0], ref cyclesList[0]);
 		FindCycles (1, ref coinCycles [1], ref cyclesList[1]);
 
@@ -250,28 +193,27 @@ public class cycles : MonoBehaviour {
 
 	}
 
-
-	public List<List<Vector3>> FindCycles(int player, ref List<List<Vector3>> polygons, ref List<List<int>> cyclesOut)
+*/
+	public std::vector<std::vector<b2Vec2>> FindCycles(int player, std::vector<std::vector<b2Vec2>> polygons, ref std::vector<std::vector<int>> cyclesOut)
 	{
 				//GameObject[] allCoins;
 				Dictionary<int, GameObject> allCoins;
-				List<GameObject> coins = new List<GameObject> ();
-				List<int> subst = new List<int>();
+				std::vector<GameObject> coins = new std::vector<GameObject> ();
+				std::vector<int> subst = new std::vector<int>();
 
 		//allCoins = GameObject.FindGameObjectsWithTag ("coin");
 
 				setupLevel sl1 = GameObject.Find("root1").GetComponent<setupLevel>();
                 allCoins = sl1.coinDict;
 
-				List<List<int>> g2 = new List<List<int>> ();
+				std::vector<std::vector<int>> g2 = new std::vector<std::vector<int>> ();
 
-				List <Vector3> v2 = new List <Vector3> ();
+				std::vector <b2Vec2> v2 = new std::vector <b2Vec2> ();
 
 		
 
 				foreach(KeyValuePair<int, GameObject> entry in allCoins)
 				{
-				//for (int i = 0; i < allCoins.Count(); i++) {
 
 						int cp1 = entry.Value.GetComponent<coin> ().player;
 						if (cp1 == player) {
@@ -285,9 +227,9 @@ public class cycles : MonoBehaviour {
 						}
 				}
 
-				//List<List<Vector3>> polygons;
+
 		
-				List<List<Vector3>> edge = new List<List<Vector3>> ();
+				std::vector<std::vector<b2Vec2>> edge = new std::vector<std::vector<b2Vec2>> ();
 		
 		
 				int edgeNum = 0;
@@ -297,14 +239,14 @@ public class cycles : MonoBehaviour {
 						for (int j = i+1; j<coins.Count(); j++) {
 								GameObject c1 = coins [i];
 								GameObject c2 = coins [j];
-								Vector3 v1 = c1.transform.position - c2.transform.position;
+								b2Vec2 v1 = c1.transform.position - c2.transform.position;
 				
 								if (v1.magnitude < proximityRadius) {
-										g2.Add (new List<int> {i,j});
+										g2.Add (new std::vector<int> {i,j});
 
 										//sw.WriteLine ("Edge (" + i + "," + j + ") added");
 
-										edge.Add (new List<Vector3> {c1.transform.position, c2.transform.position});
+										edge.Add (new std::vector<b2Vec2> {c1.transform.position, c2.transform.position});
 										edgeNum++;
 								}
 				
@@ -315,22 +257,22 @@ public class cycles : MonoBehaviour {
 
 
 
-				List<int> ed0;
+				std::vector<int> ed0;
 				for (int i=0; i<v2.Count; i++) {
 						for (int j=0; j<g2.Count; j++) {
 								//edH0.First();
 
 								ed0 = g2 [j];
 								Segment s1 = new Segment ();
-								s1 = Segment.SegmentWithPoints (new Vector2 (v2 [ed0 [0]].x, v2 [ed0 [0]].z), new Vector2 (v2 [ed0 [1]].x, v2 [ed0 [1]].z));
+								s1 = Segment.SegmentWithPoints (new Vector2 (v2 [ed0 [0]].x, v2 [ed0 [0]].y), new Vector2 (v2 [ed0 [1]].x, v2 [ed0 [1]].y));
 
-								if ((i != ed0 [0]) && (i != ed0 [1]) && (s1.ContainsPoint (new Vector2 (v2 [i].x, v2 [i].z), 1e-4f))) {
-										//List<int> ed01 = new List<int> {ed0[0],i};
-										List<int> ed01 = new List<int> {ed0[0],i};
+								if ((i != ed0 [0]) && (i != ed0 [1]) && (s1.ContainsPoint (new Vector2 (v2 [i].x, v2 [i].y), 1e-4f))) {
+										//std::vector<int> ed01 = new std::vector<int> {ed0[0],i};
+										std::vector<int> ed01 = new std::vector<int> {ed0[0],i};
 										//if (!g2.Contains(ed01))
 										g2.Add (ed01);
-										//List<int> ed02 = new List<int> {i,ed0[1]};
-										List<int> ed02 = new List<int> {i,ed0[1]};
+										//std::vector<int> ed02 = new std::vector<int> {i,ed0[1]};
+										std::vector<int> ed02 = new std::vector<int> {i,ed0[1]};
 										//if (!g2.Contains(ed02))
 										g2.Add (ed02);
 
@@ -345,12 +287,12 @@ public class cycles : MonoBehaviour {
 				removeDuplicates (ref g2, v2);
 
 
-				Dictionary<int, List<int>> subdivs = new Dictionary<int, List<int>>();
-				List<int> edge1,edge2;
+				Dictionary<int, std::vector<int>> subdivs = new Dictionary<int, std::vector<int>>();
+				std::vector<int> edge1,edge2;
 				
 				for (int i = 0; i<g2.Count; i++) 
 				{
-					subdivs.Add(i,new List<int> {g2[i][0],g2[i][1]});
+					subdivs.Add(i,new std::vector<int> {g2[i][0],g2[i][1]});
 				}
 
 				for (int i = 0; i<g2.Count; i++)
@@ -379,17 +321,17 @@ public class cycles : MonoBehaviour {
 						}
 		for (int i=0; i< subdivs.Keys.Count;i++) {
 			int div = subdivs.Keys.ElementAt(i);
-			subdivs[div] = subdivs [div].Distinct ().ToList();
+			subdivs[div] = subdivs [div].Distinct ().Tostd::vector();
 			subdivs[div]=subdivs[div].OrderBy(item => ((v2[g2[div][0]]-v2[item]).magnitude)).ToList();
 		}		
 
 
-		List<List<int>> g3 = new List<List<int>> ();
-		foreach (KeyValuePair<int, List<int>> kvp in subdivs) 
+		std::vector<std::vector<int>> g3 = new std::vector<std::vector<int>> ();
+		foreach (KeyValuePair<int, std::vector<int>> kvp in subdivs)
 		{
 			for (int i=0; i< kvp.Value.Count-1; i++)
 			{
-				g3.Add(new List<int> {kvp.Value[i], kvp.Value[i+1]} );
+				g3.Add(new std::vector<int> {kvp.Value[i], kvp.Value[i+1]} );
 				//sw.WriteLine("g3 edge added (" + kvp.Value[i] +","  + kvp.Value[i+1] + ")");
 			}
 		}
@@ -399,7 +341,7 @@ public class cycles : MonoBehaviour {
 
 		removeDuplicates (ref g2, v2);
 	
-		//v2 = v2.Distinct ().ToList ();
+		//v2 = v2.Distinct ().Tostd::vector ();
 
 		edges[player] = edge;
 		allVertices [player] = v2;
@@ -407,8 +349,8 @@ public class cycles : MonoBehaviour {
 
 		CGraph cg1 = new CGraph(g2, v2, sw);
 
-		List<List<int>> cycles = cg1.findCycles2();
-		//cyclesList = cycles;
+		std::vector<std::vector<int>> cycles = cg1.findCycles2();
+		//cyclesstd::vector = cycles;
 
 
 
@@ -418,11 +360,11 @@ public class cycles : MonoBehaviour {
 
 
 		
-		List<List<int>> onlyCoinCycles=new List<List<int>>();
+		std::vector<std::vector<int>> onlyCoinCycles=new std::vector<std::vector<int>>();
 		int ci=0;	
-		foreach (List<int> cy in cycles) 
+		foreach (std::vector<int> cy in cycles)
 		{
-			onlyCoinCycles.Add (new List<int>());
+			onlyCoinCycles.Add (new std::vector<int>());
 
 			for (int i = 0; i < cy.Count; i++) 
 			{
@@ -435,11 +377,11 @@ public class cycles : MonoBehaviour {
 		if (cycles != null) {
 		
 
-		polygons = new List<List<Vector3>>();
+		polygons = new std::vector<std::vector<b2Vec2>>();
 
-						foreach (List<int> cy in cycles) {
+						foreach (std::vector<int> cy in cycles) {
 								string s = "" + cy [0];
-								polygons.Add (new List<Vector3> ());
+								polygons.Add (new std::vector<b2Vec2> ());
 								polygons [cp].Add (v2 [cy [0]]);
 								if (cy[0]< coins.Count)
 								{
@@ -449,7 +391,7 @@ public class cycles : MonoBehaviour {
 								for (int i = 1; i < cy.Count; i++) {
 										s += "," + cy [i];
 					
-										Vector3 pos = v2 [cy [i]];
+										b2Vec2 pos = v2 [cy [i]];
 
 										polygons [cp].Add (pos);
 										if (cy[i]< coins.Count)
@@ -504,7 +446,7 @@ public class cycles : MonoBehaviour {
 				// One vertex at transform position
 				//GL.Vertex3 (0, 0, 0);
 				// Another vertex at edge of circle
-				GL.Vertex3 (e1[i].x, 0.0f, e1[i].z);
+				GL.Vertex3 (e1[i].x, 0.0f, e1[i].y);
 			}
 			GL.End ();
 		}
@@ -514,10 +456,10 @@ public class cycles : MonoBehaviour {
 		{
 			GL.Begin (GL.QUADS);
 				GL.Color (new Color (0, 0.1f, 0, 0.8F));
-				GL.Vertex3 (v1.x-0.05f, 0.2f, v1.z-0.05f);
-				GL.Vertex3 (v1.x-0.05f, 0.2f, v1.z+0.05f);
-				GL.Vertex3 (v1.x+0.05f, 0.2f, v1.z+0.05f);
-				GL.Vertex3 (v1.x+0.05f, 0.2f, v1.z-0.05f);
+				GL.Vertex3 (v1.x-0.05f, 0.2f, v1.y-0.05f);
+				GL.Vertex3 (v1.x-0.05f, 0.2f, v1.y+0.05f);
+				GL.Vertex3 (v1.x+0.05f, 0.2f, v1.y+0.05f);
+				GL.Vertex3 (v1.x+0.05f, 0.2f, v1.y-0.05f);
 			GL.End ();
 		}
 
@@ -534,7 +476,7 @@ public class cycles : MonoBehaviour {
 				// One vertex at transform position
 				//GL.Vertex3 (0, 0, 0);
 				// Another vertex at edge of circle
-				GL.Vertex3 (e1[i].x, 0.0f, e1[i].z);
+				GL.Vertex3 (e1[i].x, 0.0f, e1[i].y);
 			}
 			GL.End ();
 
@@ -556,8 +498,8 @@ public class cycles : MonoBehaviour {
 										// Vertex colors change from red to green
 										GL.Color (colorArray[ccolor%3]);
 
-										GL.Vertex3 (cc [i - 1].x, 0.2f, cc [i - 1].z);
-										GL.Vertex3 (cc [i].x, 0.2f, cc [i].z);
+										GL.Vertex3 (cc [i - 1].x, 0.2f, cc [i - 1].y);
+										GL.Vertex3 (cc [i].x, 0.2f, cc [i].y);
 								}
 								GL.End ();
 								ccolor++;
@@ -574,8 +516,8 @@ public class cycles : MonoBehaviour {
 										// One vertex at transform position
 										//GL.Vertex3 (0, 0, 0);
 										// Another vertex at edge of circle
-										GL.Vertex3 (cc[i-1].x, 0.2f, cc[i-1].z);
-										GL.Vertex3 (cc[i].x, 0.2f, cc[i].z);
+										GL.Vertex3 (cc[i-1].x, 0.2f, cc[i-1].y);
+										GL.Vertex3 (cc[i].x, 0.2f, cc[i].y);
 								}
 								GL.End ();
 						}
@@ -585,9 +527,9 @@ public class cycles : MonoBehaviour {
 		//GL.PopMatrix ();
 	}
 
-	public void removeDuplicates( ref List<List<int>> g2 , List<Vector3> v2)
+	public void removeDuplicates( ref std::vector<std::vector<int>> g2 , std::vector<b2Vec2> v2)
 	{
-		List<int> edge1, edge2;
+		std::vector<int> edge1, edge2;
 		
 		for (int i =0; i< g2.Count; i++)
 		for (int j=i+1; j < g2.Count; j++) {
@@ -608,7 +550,7 @@ public class cycles : MonoBehaviour {
 		}
 
 	}
-	public int addOrGetExisting(Vector3 vi,  ref List<Vector3> v2)
+	public int addOrGetExisting(b2Vec2 vi,  ref std::vector<b2Vec2> v2)
 	{
 				int cn;
 				int nn = -1;
@@ -626,12 +568,12 @@ public class cycles : MonoBehaviour {
 						cn = nn;
 				} else {
 						cn = v2.Count;
-						v2.Add (new Vector3 (vi.x, 0.1f, vi.y));
+						v2.Add (new b2Vec2 (vi.x, 0.1f, vi.y));
 				}
 		return cn;
 		}
 
-		public int findNodeInCycle(Vector3 vi,  List<Vector3> v2)
+		public int findNodeInCycle(b2Vec2 vi,  std::vector<b2Vec2> v2)
 		{
 			int cn;
 			int nn = -1;
@@ -647,51 +589,5 @@ public class cycles : MonoBehaviour {
 
 			return nn;
 		}
-	/*
-		public List<List<Vector3>> cycles2Polygons(List<List<int>> cycles)
-		{
-		List<List<Vector3>> polygons;
-
-		int cp = 0;
-		polygons = null;
-		
-		if (cycles != null) {
-			
-			polygons = new List<List<Vector3>>();
-			
-			foreach (List<int> cy in cycles) {
-				string s = "" + cy [0];
-				polygons.Add (new List<Vector3> ());
-				polygons [cp].Add (v2 [cy [0]]);
-				if (cy[0]< globals.coinDict.Count)
-				{
-					globals.coinDict[cy [0]].GetComponent<Multitag> ().TagsSet.Add ("connected");
-					globals.coinDict [cy [0]].GetComponent<Multitag> ().TagsSet.Add (cp.ToString());
-				}
-				for (int i = 1; i < cy.Count; i++) {
-					s += "," + cy [i];
-					
-					Vector3 pos = v2 [cy [i]];
-					
-					polygons [cp].Add (pos);
-					if (cy[i]< globals.coinDict.Count)
-					{
-						globals.coinDict [cy [i]].GetComponent<Multitag> ().TagsSet.Add ("connected");
-						globals.coinDict [cy [i]].GetComponent<Multitag> ().TagsSet.Add (cp.ToString());
-					}
-					//linerenderer.SetPosition (i, pos);
-					
-				}
-				
-				//polygons[cp].Add(coins[cy[0]].transform.position);
-				
-				cp++;
-			}
-		}
-		
-		return polygons;
-
-		}
-*/
 
 }

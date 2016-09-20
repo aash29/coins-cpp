@@ -1,5 +1,6 @@
 #include "graph2.h"
 #include <iostream>
+#include <sstream>
 
 
 int pnpoly(int nvert, float *vertx, float *verty, float testx, float testy) {
@@ -12,9 +13,12 @@ int pnpoly(int nvert, float *vertx, float *verty, float testx, float testy) {
     return c;
 };
 
-CGraph::CGraph(std::vector<std::vector<int>> iGraph, std::vector<b2Vec2> iVertices) {
+CGraph::CGraph(std::vector<std::vector<int>> iGraph, std::vector<b2Vec2> iVertices, AppLog* coinsLog) {
     graph = iGraph;
     vertices = iVertices;
+
+    log = coinsLog;
+
 
     for (int i = 0; i < graph.size(); i++) {                        //turn pairs of vertices into neighbour lists
 
@@ -39,13 +43,28 @@ CGraph::CGraph(std::vector<std::vector<int>> iGraph, std::vector<b2Vec2> iVertic
 
 void CGraph::printNeighbors() {
     std::string s1;
+    std::stringstream ss;
+    //log->AddLog("lalala");
     for (auto it = neighbors.begin(); it != neighbors.end(); it++) {
-        std::cout << it->first << ":";
+        ss << it->first << ":";
         for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
-            std::cout << *itt << ",";
+            ss << *itt << ",";
         }
-        std::cout << std::endl;
+        ss<< std::endl;
     }
+    log->AddLog(ss.str().c_str());
+}
+
+
+void CGraph::printVector(std::vector<int> line) {
+    std::string s1;
+    std::stringstream ss;
+    //log->AddLog("lalala");
+    for (auto it = line.begin(); it != line.end(); it++) {
+            ss << *it << ",";
+        }
+        ss<< std::endl;
+    log->AddLog(ss.str().c_str());
 }
 
 
@@ -300,7 +319,7 @@ std::vector<std::vector<int>> CGraph::findCycles2() {
 
 }
 
-void testCgraph() {
+void testCgraph(AppLog* coinsLog) {
 
     std::vector<std::vector<int>> ig = std::vector<std::vector<int>>();
 
@@ -309,6 +328,14 @@ void testCgraph() {
     vert.push_back(b2Vec2(0.f, 1.f));
     vert.push_back(b2Vec2(-1.f, 0.f));
     vert.push_back(b2Vec2(1.f, 0.f));
+
+
+
+
+    vert.push_back(b2Vec2(10.f, 1.f));
+    vert.push_back(b2Vec2(9.f, 0.f));
+    vert.push_back(b2Vec2(11.f, 0.f));
+
 
     std::vector<int> v1 = std::vector<int>();
 
@@ -328,11 +355,36 @@ void testCgraph() {
     ig.push_back(v1);
 
 
-    CGraph *cg1 = new CGraph(ig, vert);
+    ig.push_back(v1);
+
+    v1[0] = 3;
+    v1[1] = 5;
+
+    ig.push_back(v1);
+
+    v1[0] = 4;
+    v1[1] = 5;
+
+    ig.push_back(v1);
+
+    v1[0] = 3;
+    v1[1] = 4;
+
+    ig.push_back(v1);
+
+
+
+    coinsLog->AddLog("neighbors \n");
+    CGraph *cg1 = new CGraph(ig, vert, coinsLog);
 
     cg1->printNeighbors();
 
-    cg1->findCycles2();
+    std::vector<std::vector<int>> c1  = cg1->findCycles2();
+    coinsLog->AddLog("cycles \n");
+    cg1->printVector(c1[0]);
+    cg1->printVector(c1[1]);
+
+
 
 };
 

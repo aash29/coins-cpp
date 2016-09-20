@@ -17,10 +17,11 @@
 */
 
 #include "Test.h"
-
+#include "coinsLog.h"
 #include "Car.h"
 
 
+//AppLog coinsLog;
 TestEntry g_testEntries[] =
         {
                 {"Car", Car::Create},
