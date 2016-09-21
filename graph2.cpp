@@ -1,6 +1,7 @@
 #include "graph2.h"
 #include <iostream>
 #include <sstream>
+#include <iterator>
 
 
 int pnpoly(int nvert, float *vertx, float *verty, float testx, float testy) {
@@ -295,8 +296,10 @@ std::vector<std::vector<int>> CGraph::findCycles2() {
 
             std::vector<b2Vec2> p1 = cycleToPolygon2(currentCycle);
 
-            float vertx[p1.size()];
-            float verty[p1.size()];
+			const int vc = p1.size();
+			float* vertx = new float[vc];
+			float* verty = new float[vc];
+
 
             for (int i = 0; i < p1.size(); i++) {
                 vertx[i] = p1[i].x;

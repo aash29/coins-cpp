@@ -1,6 +1,6 @@
 
 #include <vector>
-#include <Box2D.h>
+#include <Box2D/Box2D.h>
 
 class cycles {
 
@@ -9,13 +9,13 @@ class cycles {
 
 	 bool calculatedCyclesThisPush=true;
 
-	std::vector<std::vector<int>> cyclesList = std::vector<std::vector<int>>[2];
+	std::vector<std::vector<int>>* cyclesList =  new std::vector< std::vector<int> >[2];
 
-	std::vector<std::vector<b2Vec2>> coinCycles = std::vector<std::vector<b2Vec2>>[2];
+	std::vector<std::vector<b2Vec2>>* coinCycles = new std::vector<std::vector<b2Vec2> >[2];
 
-	std::vector<std::vector<b2Vec2>> edges = std::vector<std::vector<b2Vec2>>[2];
+	std::vector<std::vector<b2Vec2>>* edges = new std::vector<std::vector<b2Vec2> >[2];
 
-	std::vector<b2Vec2> allVertices = std::vector<b2Vec2>[2];
+	std::vector<b2Vec2>* allVertices = new std::vector<b2Vec2>[2];
 
 
 
@@ -35,10 +35,10 @@ class cycles {
 
 	 bool IsPointInPolygon( b2Vec2 p, std::vector<b2Vec2> polygon )
 	    {
-	        double minX = polygon[ 0 ].x;
-	        double maxX = polygon[ 0 ].x;
-	        double minY = polygon[ 0 ].y;
-	        double maxY = polygon[ 0 ].y;
+	        float minX = polygon[ 0 ].x;
+			float maxX = polygon[ 0 ].x;
+			float minY = polygon[ 0 ].y;
+			float maxY = polygon[ 0 ].y;
 	        for ( int i = 1 ; i < polygon.size() ; i++ )
 	        {
 	            b2Vec2 q = polygon[ i ];
@@ -65,10 +65,10 @@ class cycles {
 	        }
 
 	        return inside;
-	    }
+	 };
 
 
-	public bool IsPolygonInPolygon( std::vector<b2Vec2> p1, std::vector<b2Vec2> p2 )
+	 bool IsPolygonInPolygon( std::vector<b2Vec2> p1, std::vector<b2Vec2> p2 )
 	{
 
 
@@ -194,7 +194,7 @@ class cycles {
 	}
 
 */
-	public std::vector<std::vector<b2Vec2>> FindCycles(int player, std::vector<std::vector<b2Vec2>> polygons, ref std::vector<std::vector<int>> cyclesOut)
+	std::vector<std::vector<b2Vec2> > FindCycles(int player, std::vector<std::vector<b2Vec2>> polygons, std::vector<std::vector<int> > cyclesOut)
 	{
 				//GameObject[] allCoins;
 				Dictionary<int, GameObject> allCoins;
@@ -418,9 +418,9 @@ class cycles {
 		
 	}
 
-
+	/*
 	// Will be called after all regular rendering is done
-	public void OnRenderObject ()
+	 void OnRenderObject ()
 	{
 		CreateLineMaterial ();
 		// Apply the line material
@@ -435,22 +435,7 @@ class cycles {
 
 
 		try {
-			/*
-		foreach (var e1 in edges[0])
-		{
-			GL.Begin (GL.LINES);
-			for (int i = 0; i < e1.Count; ++i)
-			{
-				// Vertex colors change from red to green
-				GL.Color (new Color (0, 0.1f, 0, 0.8F));
-				// One vertex at transform position
-				//GL.Vertex3 (0, 0, 0);
-				// Another vertex at edge of circle
-				GL.Vertex3 (e1[i].x, 0.0f, e1[i].y);
-			}
-			GL.End ();
-		}
-		*/
+			
 
 		foreach (var v1 in allVertices[0])
 		{
@@ -464,24 +449,7 @@ class cycles {
 		}
 
 
-			/*
-		
-		foreach (var e1 in edges[1])
-		{
-			GL.Begin (GL.LINES);
-			for (int i = 0; i < e1.Count; ++i)
-			{
-				// Vertex colors change from red to green
-				GL.Color (new Color (0.5f, 0.5f, 0, 0.8F));
-				// One vertex at transform position
-				//GL.Vertex3 (0, 0, 0);
-				// Another vertex at edge of circle
-				GL.Vertex3 (e1[i].x, 0.0f, e1[i].y);
-			}
-			GL.End ();
-
-		}
-		*/
+			
 		}
 		catch {};
 
@@ -526,8 +494,9 @@ class cycles {
 
 		//GL.PopMatrix ();
 	}
+	*/
 
-	public void removeDuplicates( ref std::vector<std::vector<int>> g2 , std::vector<b2Vec2> v2)
+	 void removeDuplicates( std::vector<std::vector<int>> &g2 , std::vector<b2Vec2> v2)
 	{
 		std::vector<int> edge1, edge2;
 		

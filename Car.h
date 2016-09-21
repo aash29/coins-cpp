@@ -75,12 +75,13 @@ public:
         float buffer[100];
     };
 
-	std::vector<coin> *coins;
+	std::map<int, coin> coins = std::map<int, coin>();
 
     coin *body2Bot(b2Body *b1) {
-        for (std::vector<coin>::iterator bb = coins->begin(); bb != coins->end(); bb++) {
-            if (b1 == bb->wheel) {
-                return &(*bb);
+		for (auto& kv : coins) {
+        //for (std::vector<coin>::iterator bb = coins->begin(); bb != coins->end(); bb++) {
+            if (b1 == kv.second.wheel) {
+                return &(kv.second);
             }
         }
         return 0;
@@ -215,16 +216,20 @@ public:
         //m_car=createCoin(0.f,2.f);
 
 
-        coins = new std::vector<coin>;
-        coins->push_back(createCoin(0.f, 9.f, getUID(),0));
-        coins->push_back(createCoin(0.f, 6.f, getUID(),1));
-        coins->push_back(createCoin(0.f, 2.f, getUID(),0));
-        coins->push_back(createCoin(-2.f, 2.f, getUID(),1));
-        coins->push_back(createCoin(2.f, 2.f, getUID(),0));
+        //coins = new std::vector<coin>;
+		int uid = getUID();
+        coins.insert(std::make_pair(uid,createCoin(0.f, 9.f, uid,0)));
+		uid = getUID();
+		coins.insert(std::make_pair(uid, createCoin(0.f, 6.f, uid, 1)));
+		uid = getUID();
+		coins.insert(std::make_pair(uid, createCoin(0.f, 2.f, uid, 0)));
+		uid = getUID();
+		coins.insert(std::make_pair(uid, createCoin(-2.f, 2.f, uid, 1)));
+		uid = getUID();
+		coins.insert(std::make_pair(uid, createCoin(2.f, 2.f, uid, 0)));
 
 
-        magnetJoints = new std::map<int,b2RevoluteJoint *>;
-        m_currentCoin = &((*coins)[0]);
+        m_currentCoin = &(coins[0]);
     }
 
     int symmHash(short int a, short int b)
@@ -366,7 +371,7 @@ public:
         }
 
         bool f = true;
-        ImGui::GraphTestWindow((*coins)[0].buffer, 100);
+        ImGui::GraphTestWindow(coins[0].buffer, 100);
 
         ImGui::Curve("Curve", ImVec2(600, 200), 10, foo);
 
@@ -384,8 +389,8 @@ public:
 	}
 
     void DrawCoins () {
-        for (auto it =  coins->begin(); it != coins->end(); it++) {
-            g_debugDraw.DrawSolidCircle(it->wheel->GetPosition(), 1.5f, b2Vec2(0.f,0.f), it->color);
+		for (auto& kv : coins) {
+            g_debugDraw.DrawSolidCircle(kv.second.wheel->GetPosition(), 1.5f, b2Vec2(0.f,0.f), kv.second.color);
         }
     }
 
