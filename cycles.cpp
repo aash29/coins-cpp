@@ -1,6 +1,8 @@
 
 #include <vector>
+#include <map>
 #include <Box2D/Box2D.h>
+#include "Car.h"
 
 class cycles {
 
@@ -194,59 +196,51 @@ class cycles {
 	}
 
 */
-	std::vector<std::vector<b2Vec2> > FindCycles(int player, std::vector<std::vector<b2Vec2>> polygons, std::vector<std::vector<int> > cyclesOut)
+	std::vector<std::vector<b2Vec2> > FindCycles(int player, std::vector<std::vector<b2Vec2>> polygons, std::vector<std::vector<int> > cyclesOut, std::map<int, coin> &allCoins)
 	{
 				//GameObject[] allCoins;
-				Dictionary<int, GameObject> allCoins;
-				std::vector<GameObject> coins = new std::vector<GameObject> ();
-				std::vector<int> subst = new std::vector<int>();
 
-		//allCoins = GameObject.FindGameObjectsWithTag ("coin");
+				std::vector<coin> coins = std::vector<coin> ();
+				std::vector<int> subst = std::vector<int>();
 
-				setupLevel sl1 = GameObject.Find("root1").GetComponent<setupLevel>();
-                allCoins = sl1.coinDict;
+				//allCoins = GameObject.FindGameObjectsWithTag ("coin");
 
-				std::vector<std::vector<int>> g2 = new std::vector<std::vector<int>> ();
+				//setupLevel sl1 = GameObject.Find("root1").GetComponent<setupLevel>();
+                //allCoins = sl1.coinDict;
 
-				std::vector <b2Vec2> v2 = new std::vector <b2Vec2> ();
+				std::vector<std::vector<int>> g2 = std::vector<std::vector<int>> ();
+
+				std::vector <b2Vec2> v2 = std::vector <b2Vec2> ();
 
 		
 
-				foreach(KeyValuePair<int, GameObject> entry in allCoins)
+				for(auto& kv: allCoins)
 				{
-
-						int cp1 = entry.Value.GetComponent<coin> ().player;
+						int cp1 = kv.second.player;
 						if (cp1 == player) {
-								v2.Add (entry.Value.transform.position);
-
-								//sw.WriteLine ("Vertex number[" + (v2.Count - 1) + "]" + entry.Value.transform.position);
-
-								coins.Add (entry.Value); 
-								subst.Add (entry.Key);
-								//Array.Remove(coins,c0);
+								v2.push_back (kv.second.wheel->GetPosition());
+								coins.push_back(kv.second);
+								subst.push_back(kv.first);
 						}
 				}
 
 
 		
-				std::vector<std::vector<b2Vec2>> edge = new std::vector<std::vector<b2Vec2>> ();
+				std::vector<std::vector<b2Vec2>> edge = std::vector<std::vector<b2Vec2>> ();
 		
 		
 				int edgeNum = 0;
 		
-				for (int i = 0; i<coins.Count; i++) {
-						coins [i].GetComponent<Multitag> ().TagsSet.Remove ("connected");
-						for (int j = i+1; j<coins.Count(); j++) {
-								GameObject c1 = coins [i];
-								GameObject c2 = coins [j];
-								b2Vec2 v1 = c1.transform.position - c2.transform.position;
+				for (int i = 0; i<coins.size(); i++) {
+					coins[i].connected = false;
+						for (int j = i+1; j<coins.size(); j++) {
+								coin c1 = coins [i];
+								coin c2 = coins [j];
+								b2Vec2 v1 = c1.wheel->GetPosition() - c2.wheel->GetPosition();
 				
-								if (v1.magnitude < proximityRadius) {
-										g2.Add (new std::vector<int> {i,j});
-
-										//sw.WriteLine ("Edge (" + i + "," + j + ") added");
-
-										edge.Add (new std::vector<b2Vec2> {c1.transform.position, c2.transform.position});
+								if (v1.Length() < proximityRadius) {
+										g2.push_back (std::vector<int> {i,j});
+										edge.push_back (std::vector<b2Vec2> {c1.wheel->GetPosition(), c2.wheel->GetPosition()});
 										edgeNum++;
 								}
 				
@@ -258,8 +252,8 @@ class cycles {
 
 
 				std::vector<int> ed0;
-				for (int i=0; i<v2.Count; i++) {
-						for (int j=0; j<g2.Count; j++) {
+				for (int i=0; i<v2.size(); i++) {
+						for (int j=0; j<g2.size(); j++) {
 								//edH0.First();
 
 								ed0 = g2 [j];

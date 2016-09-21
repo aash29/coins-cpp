@@ -29,6 +29,8 @@
 #include "coinsLog.h"
 #include "graph2.h"
 
+#include "Test.h"
+
 
 
 class QueryCallback : public b2QueryCallback {
@@ -58,25 +60,21 @@ public:
     b2Fixture *m_fixture;
 };
 
+struct coin {
+	int id;
+	int player;
+	b2Body *wheel;
+	b2FrictionJoint *fric;
+	b2Fixture *fix;
+	b2Color color;
+	float buffer[100];
+	bool connected = false;
+};
 
 
 // This is a fun demo that shows off the wheel joint
 class Car : public Test {
 public:
-
-
-    struct coin {
-        int id;
-        int player;
-        b2Body *wheel;
-		b2FrictionJoint *fric;
-        b2Fixture *fix;
-        b2Color color;
-        float buffer[100];
-    };
-
-	std::map<int, coin> coins = std::map<int, coin>();
-
     coin *body2Bot(b2Body *b1) {
 		for (auto& kv : coins) {
         //for (std::vector<coin>::iterator bb = coins->begin(); bb != coins->end(); bb++) {
@@ -106,7 +104,7 @@ public:
 
         ImGui::Begin("Header");
         ImGui::Text("Player: %i", m_currentPlayer);
-        ImGui::Text("Message: %s", m_currentMessage);
+
         ImGui::End();
 
         if (m_showMenu) {
@@ -280,7 +278,7 @@ public:
     {
         m_currentCoin = nullptr;
 
-        m_currentMessage = "lalala";
+        //m_currentMessage = "lalala";
 
         //SetCurrent(nullptr);
         //selectedBots->clear();
@@ -415,7 +413,8 @@ public:
 
     AppLog coinsLog;
 
-    char* m_currentMessage="";
+	std::map<int, coin> coins = std::map<int, coin>();
+
 
 };
 
