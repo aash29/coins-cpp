@@ -22,15 +22,18 @@
 #include <vector>
 #include <map>
 #include <iostream>
+#include <sstream>
+
 #include "imgui.h"
 #include "graph.h"
 #include "DebugDraw.h"
 
 #include "coinsLog.h"
 #include "graph2.h"
+#include "cycles.h"
 
 #include "Test.h"
-
+#include "coin.h"
 
 
 class QueryCallback : public b2QueryCallback {
@@ -60,24 +63,13 @@ public:
     b2Fixture *m_fixture;
 };
 
-struct coin {
-	int id;
-	int player;
-	b2Body *wheel;
-	b2FrictionJoint *fric;
-	b2Fixture *fix;
-	b2Color color;
-	float buffer[100];
-	bool connected = false;
-};
-
 
 // This is a fun demo that shows off the wheel joint
 class Car : public Test {
 public:
     coin *body2Bot(b2Body *b1) {
-		for (auto& kv : coins) {
-        //for (std::vector<coin>::iterator bb = coins->begin(); bb != coins->end(); bb++) {
+        for (auto &kv : coins) {
+            //for (std::vector<coin>::iterator bb = coins->begin(); bb != coins->end(); bb++) {
             if (b1 == kv.second.wheel) {
                 return &(kv.second);
             }
@@ -89,18 +81,18 @@ public:
 
     void sInterface() {
 
-        ImGui::SetNextWindowSize(ImVec2(100, 360),ImGuiSetCond_FirstUseEver);
-        ImGui::SetNextWindowPos(ImVec2(1200,300),ImGuiSetCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(100, 360), ImGuiSetCond_FirstUseEver);
+        ImGui::SetNextWindowPos(ImVec2(1200, 300), ImGuiSetCond_FirstUseEver);
         ImGui::Begin("Force");
 
-        ImGui::VSliderFloat("Force", ImVec2(100,300),&m_force,0.f,1.f);
+        ImGui::VSliderFloat("Force", ImVec2(100, 300), &m_force, 0.f, 1.f);
         ImGui::End();
 
-        ImGui::SetNextWindowSize(ImVec2(100, 360),ImGuiSetCond_FirstUseEver);
-        ImGui::SetNextWindowPos(ImVec2(1200,300),ImGuiSetCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(100, 360), ImGuiSetCond_FirstUseEver);
+        ImGui::SetNextWindowPos(ImVec2(1200, 300), ImGuiSetCond_FirstUseEver);
 
-        ImGui::SetNextWindowPos(ImVec2(0, 0),ImGuiSetCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(800, 360),ImGuiSetCond_FirstUseEver);
+        ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiSetCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(800, 360), ImGuiSetCond_FirstUseEver);
 
         ImGui::Begin("Header");
         ImGui::Text("Player: %i", m_currentPlayer);
@@ -108,10 +100,10 @@ public:
         ImGui::End();
 
         if (m_showMenu) {
-            ImGui::SetNextWindowSize(ImVec2(400, 200),ImGuiSetCond_FirstUseEver);
-            ImGui::SetNextWindowPos(ImVec2(1200,300),ImGuiSetCond_FirstUseEver);
+            ImGui::SetNextWindowSize(ImVec2(400, 200), ImGuiSetCond_FirstUseEver);
+            ImGui::SetNextWindowPos(ImVec2(1200, 300), ImGuiSetCond_FirstUseEver);
             ImGui::Begin("Properties");
-            ImGui::SliderFloat("Force multiplier",&m_forceMult,1000.f,5000.f);
+            ImGui::SliderFloat("Force multiplier", &m_forceMult, 1000.f, 5000.f);
             ImGui::End();
         }
 
@@ -119,9 +111,8 @@ public:
 
     }
 
-    int getUID()
-    {
-        static int  i = -1;
+    int getUID() {
+        static int i = -1;
         i++;
         return i;
     }
@@ -129,13 +120,12 @@ public:
     coin createCoin(float x, float y, int id, int player) {
         coin bb;
 
-        bb.id=id;
+        bb.id = id;
         bb.player = player;
-        if (player==0)
-            bb.color = b2Color(1.f,0.f,0.f);
+        if (player == 0)
+            bb.color = b2Color(1.f, 0.f, 0.f);
         else
-            bb.color = b2Color(0.f,1.f,0.f);
-
+            bb.color = b2Color(0.f, 1.f, 0.f);
 
 
         b2CircleShape circle;
@@ -151,9 +141,8 @@ public:
         fd.shape = &circle;
         fd.density = 1.0f;
         fd.friction = 0.9f;
-		fd.restitution = 0.7f;
+        fd.restitution = 0.7f;
         fd.filter.groupIndex = 2;
-
 
 
         bd.position.Set(x, y);
@@ -161,16 +150,14 @@ public:
         bb.wheel->CreateFixture(&fd);
 
 
+        b2FrictionJointDef jf;
 
+        jf.Initialize(bb.wheel, m_groundBody, bb.wheel->GetPosition());
 
-		b2FrictionJointDef jf;
+        jf.maxForce = 100.f;
+        jf.maxTorque = 100.f;
 
-		jf.Initialize(bb.wheel, m_groundBody, bb.wheel->GetPosition());
-
-		jf.maxForce = 100.f;
-		jf.maxTorque = 100.f;
-
-		bb.fric = (b2FrictionJoint*)m_world->CreateJoint(&jf);
+        bb.fric = (b2FrictionJoint *) m_world->CreateJoint(&jf);
 
         return bb;
     };
@@ -189,15 +176,19 @@ public:
             fd.shape = &shape;
             fd.density = 0.0f;
             fd.friction = 0.9f;
-			fd.restitution = 0.7f;
+            fd.restitution = 0.7f;
 
             //ground->CreateFixture(&fd);
 
-            float32 groundMap[5][2] = {{-15.0f,-15.0f}, {15.0f, -15.0f}, {15.0f,15.0f}, {-15.0f,15.0f},{-15.0f,-15.0f}  };
+            float32 groundMap[5][2] = {{-15.0f, -15.0f},
+                                       {15.0f,  -15.0f},
+                                       {15.0f,  15.0f},
+                                       {-15.0f, 15.0f},
+                                       {-15.0f, -15.0f}};
 
             float32 x = 20.0f, y1 = 0.0f, dx = 5.0f;
 
-			float x1 = groundMap[0][0];
+            float x1 = groundMap[0][0];
             y1 = groundMap[0][1];
             for (int i = 1; i < 5; i++) {
                 float32 x2 = groundMap[i][0];
@@ -215,32 +206,30 @@ public:
 
 
         //coins = new std::vector<coin>;
-		int uid = getUID();
-        coins.insert(std::make_pair(uid,createCoin(0.f, 9.f, uid,0)));
-		uid = getUID();
-		coins.insert(std::make_pair(uid, createCoin(0.f, 6.f, uid, 1)));
-		uid = getUID();
-		coins.insert(std::make_pair(uid, createCoin(0.f, 2.f, uid, 0)));
-		uid = getUID();
-		coins.insert(std::make_pair(uid, createCoin(-2.f, 2.f, uid, 1)));
-		uid = getUID();
-		coins.insert(std::make_pair(uid, createCoin(2.f, 2.f, uid, 0)));
+        int uid = getUID();
+        coins.insert(std::make_pair(uid, createCoin(0.f, 9.f, uid, 0)));
+        uid = getUID();
+        coins.insert(std::make_pair(uid, createCoin(0.f, 6.f, uid, 1)));
+        uid = getUID();
+        coins.insert(std::make_pair(uid, createCoin(0.f, 2.f, uid, 0)));
+        uid = getUID();
+        coins.insert(std::make_pair(uid, createCoin(-2.f, 2.f, uid, 1)));
+        uid = getUID();
+        coins.insert(std::make_pair(uid, createCoin(2.f, 2.f, uid, 0)));
 
 
         m_currentCoin = &(coins[0]);
     }
 
-    int symmHash(short int a, short int b)
-    {
-        if (a>b)
-            return symmHash(b,a);
-        return  a << 16 |  b;
+    int symmHash(short int a, short int b) {
+        if (a > b)
+            return symmHash(b, a);
+        return a << 16 | b;
     };
 
-    void newTurn()
-    {
+    void newTurn() {
         m_currentCoin = nullptr;
-        m_currentPlayer=(m_currentPlayer + 1)%2;
+        m_currentPlayer = (m_currentPlayer + 1) % 2;
         m_force = 1.0f;
         m_forceLeft = 1.0f;
     };
@@ -248,7 +237,7 @@ public:
 
     void Keyboard(int key) {
 
-        ImGuiIO& io = ImGui::GetIO();
+        ImGuiIO &io = ImGui::GetIO();
         if (!io.WantCaptureKeyboard) {
             switch (key) {
                 case GLFW_KEY_Q:
@@ -270,12 +259,11 @@ public:
         }
     }
 
-	void MouseMove(const b2Vec2 &p) {
-		m_mouseWorld = p;
-	}
+    void MouseMove(const b2Vec2 &p) {
+        m_mouseWorld = p;
+    }
 
-    void RightMouseDown(const b2Vec2 &p)
-    {
+    void RightMouseDown(const b2Vec2 &p) {
         m_currentCoin = nullptr;
 
         //m_currentMessage = "lalala";
@@ -286,9 +274,8 @@ public:
 
     void MouseDown(const b2Vec2 &p) {
         //Test::MouseDown(p);
-        ImGuiIO& io = ImGui::GetIO();
-        if (!io.WantCaptureMouse)
-        {
+        ImGuiIO &io = ImGui::GetIO();
+        if (!io.WantCaptureMouse) {
 
             m_mouseWorld = p;
 
@@ -313,12 +300,11 @@ public:
 
                 b2Body *body = callback.m_fixture->GetBody();
 
-                if (body2Bot(body)->player==m_currentPlayer){
+                if (body2Bot(body)->player == m_currentPlayer) {
                     m_currentCoin = body2Bot(body);
                 }
             }
-            else
-            {
+            else {
                 if (m_currentCoin) {
                     b2Vec2 f1 = m_force * m_forceMult * (p - m_currentCoin->wheel->GetPosition());
                     m_currentCoin->wheel->ApplyForceToCenter(f1, true);
@@ -330,21 +316,19 @@ public:
     }
 
 
-
     void Step(Settings *settings) {
 
         Test::Step(settings);
 
-		HighlightCurrentCoin();
+        HighlightCurrentCoin();
 
-		DrawArrow();
+        DrawArrow();
 
         DrawCoins();
 
         sInterface();
 
-
-
+        DrawCycles();
 
 
     }
@@ -376,30 +360,143 @@ public:
     }
 
 
-	void HighlightCurrentCoin() {
+    void HighlightCurrentCoin() {
         if (m_currentCoin)
-		    g_debugDraw.DrawCircle(m_currentCoin->wheel->GetWorldCenter(), 2.f, b2Color(1.f, 1.f, 1.f));
-	};
- 
-	void DrawArrow() {
-        if (m_currentCoin)
-		    g_debugDraw.DrawSegment(m_currentCoin->wheel->GetWorldCenter(), m_mouseWorld, b2Color(1.f, 1.f, 1.f));
-	}
+            g_debugDraw.DrawCircle(m_currentCoin->wheel->GetWorldCenter(), 2.f, b2Color(1.f, 1.f, 1.f));
+    };
 
-    void DrawCoins () {
-		for (auto& kv : coins) {
-            g_debugDraw.DrawSolidCircle(kv.second.wheel->GetPosition(), 1.5f, b2Vec2(0.f,0.f), kv.second.color);
+    void DrawArrow() {
+        if (m_currentCoin)
+            g_debugDraw.DrawSegment(m_currentCoin->wheel->GetWorldCenter(), m_mouseWorld, b2Color(1.f, 1.f, 1.f));
+    }
+
+    void DrawCoins() {
+        for (auto &kv : coins) {
+            g_debugDraw.DrawSolidCircle(kv.second.wheel->GetPosition(), 1.5f, b2Vec2(0.f, 0.f), kv.second.color);
+        }
+    }
+
+    void DrawCycles() {
+        static cycles c2 = cycles();
+        static std::vector<std::vector<b2Vec2>> polygons;
+        static std::vector<std::vector<int> > cyclesOut;
+
+        std::vector<std::vector<b2Vec2> > c3 = c2.FindCycles(0, polygons, cyclesOut, coins);
+        b2Vec2 v0;
+        if (c3.size() > 0) {
+            v0 = c3[0][0];
+
+            for (auto &v : c3[0]) {
+                g_debugDraw.DrawSegment(v0, v,b2Color(1.f,1.f,1.f));
+                v0 = v;
+            }
         }
     }
 
 
+    void printVector(std::vector<int> line) {
+        std::string s1;
+        std::stringstream ss;
+        //log->AddLog("lalala");
+        for (auto it = line.begin(); it != line.end(); it++) {
+            ss << *it << ",";
+        }
+        ss << std::endl;
+        coinsLog.AddLog(ss.str().c_str());
+    }
+
+
+    void printVector(std::vector<b2Vec2> line) {
+        std::string s1;
+        std::stringstream ss;
+        //log->AddLog("lalala");
+        for (auto it = line.begin(); it != line.end(); it++) {
+            ss << "(" << it->x << "," << it->y << ")";
+        }
+        ss << std::endl;
+        coinsLog.AddLog(ss.str().c_str());
+    }
+
+
+    void testCgraph() {
+
+        std::vector<std::vector<int>> ig = std::vector<std::vector<int>>();
+
+        std::vector<b2Vec2> vert = std::vector<b2Vec2>();
+
+        vert.push_back(b2Vec2(0.f, 1.f));
+        vert.push_back(b2Vec2(-1.f, 0.f));
+        vert.push_back(b2Vec2(1.f, 0.f));
+
+
+        vert.push_back(b2Vec2(10.f, 1.f));
+        vert.push_back(b2Vec2(9.f, 0.f));
+        vert.push_back(b2Vec2(11.f, 0.f));
+
+
+        std::vector<int> v1 = std::vector<int>();
+
+        v1.push_back(0);
+        v1.push_back(1);
+
+        ig.push_back(v1);
+
+        v1[0] = 0;
+        v1[1] = 2;
+
+        ig.push_back(v1);
+
+        v1[0] = 1;
+        v1[1] = 2;
+
+        ig.push_back(v1);
+
+
+        ig.push_back(v1);
+
+        v1[0] = 3;
+        v1[1] = 5;
+
+        ig.push_back(v1);
+
+        v1[0] = 4;
+        v1[1] = 5;
+
+        ig.push_back(v1);
+
+        v1[0] = 3;
+        v1[1] = 4;
+
+        ig.push_back(v1);
+
+
+        coinsLog.AddLog("neighbors \n");
+        CGraph cg1 = CGraph(ig, vert, &coinsLog);
+
+        //cg1.printNeighbors();
+
+        std::vector<std::vector<int>> c1 = cg1.findCycles2();
+        coinsLog.AddLog("cycles \n");
+        printVector(c1[0]);
+        printVector(c1[1]);
+
+        std::vector<std::vector<b2Vec2>> polygons;
+        std::vector<std::vector<int> > cyclesOut;
+        cycles c2 = cycles();
+        std::vector<std::vector<b2Vec2> > c3 = c2.FindCycles(0, polygons, cyclesOut, coins);
+        for (auto &v : c3) {
+            printVector(v);
+        }
+
+    };
 
     static Test *Create() {
 
-        Car* c1 = new Car();
-        testCgraph(&(c1->coinsLog));
+        Car *c1 = new Car();
+        c1->testCgraph();
         return c1;
     }
+
 
     coin *m_currentCoin;
 
@@ -413,9 +510,10 @@ public:
 
     AppLog coinsLog;
 
-	std::map<int, coin> coins = std::map<int, coin>();
+    std::map<int, coin> coins = std::map<int, coin>();
 
 
 };
+
 
 #endif

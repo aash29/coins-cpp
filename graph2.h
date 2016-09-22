@@ -22,8 +22,8 @@
         CGraph(std::vector<std::vector<int>> iGraph, std::vector<b2Vec2> iVertices, AppLog* log = static_cast<AppLog*>(nullptr));
 
         std::vector<std::vector<int>> findCycles2();
-        void printNeighbors();
-		void printVector(std::vector<int> line);
+        //void printNeighbors();
+		//void printVector(std::vector<int> line);
 
 
         std::vector<std::vector<int>> graph;

@@ -1,36 +1,8 @@
-#include <vector>
-#include <map>
-#include <Box2D/Box2D.h>
-#include "Car.h"
-#include "geometry2d.h"
-
-class cycles {
+#include "cycles.h"
 
 
-    float proximityRadius = 4.0f;
 
-    bool calculatedCyclesThisPush = true;
-
-    std::vector<std::vector<int>> *cyclesList = new std::vector<std::vector<int> >[2];
-
-    std::vector<std::vector<b2Vec2>> *coinCycles = new std::vector<std::vector<b2Vec2> >[2];
-
-    std::vector<std::vector<b2Vec2>> *edges = new std::vector<std::vector<b2Vec2> >[2];
-
-    std::vector<b2Vec2> *allVertices = new std::vector<b2Vec2>[2];
-
-
-    void Start() {
-        /*
-        logName = "count_fox" + (100 * UnityEngine.Random.value).ToString () + ".txt";
-        sw = new StreamWriter(logName);
-        sw.WriteLine ("lalala");
-        sw.Flush ();
-        */
-    }
-
-
-    bool IsPointInPolygon(b2Vec2 p, std::vector<b2Vec2> polygon) {
+    bool cycles::IsPointInPolygon(b2Vec2 p, std::vector<b2Vec2> polygon) {
         float minX = polygon[0].x;
         float maxX = polygon[0].x;
         float minY = polygon[0].y;
@@ -61,7 +33,7 @@ class cycles {
     };
 
 
-    bool IsPolygonInPolygon(std::vector<b2Vec2> p1, std::vector<b2Vec2> p2) {
+    bool cycles::IsPolygonInPolygon(std::vector<b2Vec2> p1, std::vector<b2Vec2> p2) {
 
 
         for (int i = 0; i < p1.size(); i++)
@@ -186,7 +158,7 @@ class cycles {
 	}
 
 */
-    std::vector<std::vector<b2Vec2> > FindCycles(int player, std::vector<std::vector<b2Vec2>> polygons,
+    std::vector<std::vector<b2Vec2> > cycles::FindCycles(int player, std::vector<std::vector<b2Vec2>> polygons,
                                                  std::vector<std::vector<int> > cyclesOut,
                                                  std::map<int, coin> &allCoins) {
         //GameObject[] allCoins;
@@ -463,7 +435,7 @@ class cycles {
     }
     */
 
-    void removeDuplicates(std::vector<std::vector<int>> &g2, std::vector<b2Vec2> v2) {
+    void cycles::removeDuplicates(std::vector<std::vector<int>> &g2, std::vector<b2Vec2> v2) {
         std::vector<int> edge1, edge2;
 
         for (int i = 0; i < g2.size(); i++)
@@ -486,7 +458,7 @@ class cycles {
 
     }
 
-    int addOrGetExisting(b2Vec2 vi, std::vector<b2Vec2> &v2) {
+    int cycles::addOrGetExisting(b2Vec2 vi, std::vector<b2Vec2> &v2) {
         int cn;
         int nn = -1;
         int i = 0;
@@ -508,20 +480,4 @@ class cycles {
         return cn;
     }
 
-    int findNodeInCycle(b2Vec2 vi, std::vector<b2Vec2> v2) {
-        int cn;
-        int nn = -1;
-        int i = 0;
-        for (auto &cv: v2) {
-            float mn = (cv - vi).Length();
-            if (mn < 0.01f) {
-                nn = i;
-                break;
-            }
-            i++;
-        }
 
-        return nn;
-    }
-
-};

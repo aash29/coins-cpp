@@ -1,6 +1,5 @@
 #include "graph2.h"
 #include <iostream>
-#include <sstream>
 #include <iterator>
 
 
@@ -42,31 +41,9 @@ CGraph::CGraph(std::vector<std::vector<int>> iGraph, std::vector<b2Vec2> iVertic
 }
 
 
-void CGraph::printNeighbors() {
-    std::string s1;
-    std::stringstream ss;
-    //log->AddLog("lalala");
-    for (auto it = neighbors.begin(); it != neighbors.end(); it++) {
-        ss << it->first << ":";
-        for (auto itt = it->second.begin(); itt != it->second.end(); itt++) {
-            ss << *itt << ",";
-        }
-        ss<< std::endl;
-    }
-    log->AddLog(ss.str().c_str());
-}
 
 
-void CGraph::printVector(std::vector<int> line) {
-    std::string s1;
-    std::stringstream ss;
-    //log->AddLog("lalala");
-    for (auto it = line.begin(); it != line.end(); it++) {
-            ss << *it << ",";
-        }
-        ss<< std::endl;
-    log->AddLog(ss.str().c_str());
-}
+
 
 
 int CGraph::findLeftVertex(std::unordered_set<int> nodes) {
@@ -322,74 +299,7 @@ std::vector<std::vector<int>> CGraph::findCycles2() {
 
 }
 
-void testCgraph(AppLog* coinsLog) {
 
-    std::vector<std::vector<int>> ig = std::vector<std::vector<int>>();
-
-    std::vector<b2Vec2> vert = std::vector<b2Vec2>();
-
-    vert.push_back(b2Vec2(0.f, 1.f));
-    vert.push_back(b2Vec2(-1.f, 0.f));
-    vert.push_back(b2Vec2(1.f, 0.f));
-
-
-
-
-    vert.push_back(b2Vec2(10.f, 1.f));
-    vert.push_back(b2Vec2(9.f, 0.f));
-    vert.push_back(b2Vec2(11.f, 0.f));
-
-
-    std::vector<int> v1 = std::vector<int>();
-
-    v1.push_back(0);
-    v1.push_back(1);
-
-    ig.push_back(v1);
-
-    v1[0] = 0;
-    v1[1] = 2;
-
-    ig.push_back(v1);
-
-    v1[0] = 1;
-    v1[1] = 2;
-
-    ig.push_back(v1);
-
-
-    ig.push_back(v1);
-
-    v1[0] = 3;
-    v1[1] = 5;
-
-    ig.push_back(v1);
-
-    v1[0] = 4;
-    v1[1] = 5;
-
-    ig.push_back(v1);
-
-    v1[0] = 3;
-    v1[1] = 4;
-
-    ig.push_back(v1);
-
-
-
-    coinsLog->AddLog("neighbors \n");
-    CGraph *cg1 = new CGraph(ig, vert, coinsLog);
-
-    cg1->printNeighbors();
-
-    std::vector<std::vector<int>> c1  = cg1->findCycles2();
-    coinsLog->AddLog("cycles \n");
-    cg1->printVector(c1[0]);
-    cg1->printVector(c1[1]);
-
-
-
-};
 
 
 
