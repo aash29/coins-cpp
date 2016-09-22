@@ -180,11 +180,11 @@ public:
 
             //ground->CreateFixture(&fd);
 
-            float32 groundMap[5][2] = {{-15.0f, -15.0f},
-                                       {15.0f,  -15.0f},
-                                       {15.0f,  15.0f},
-                                       {-15.0f, 15.0f},
-                                       {-15.0f, -15.0f}};
+            float32 groundMap[5][2] = {{-30.0f, -30.0f},
+                                       {30.0f,  -30.0f},
+                                       {30.0f,  30.0f},
+                                       {-30.0f, 30.0f},
+                                       {-30.0f, -30.0f}};
 
             float32 x = 20.0f, y1 = 0.0f, dx = 5.0f;
 
@@ -207,6 +207,7 @@ public:
 
         //coins = new std::vector<coin>;
         int uid = getUID();
+        /*
         coins.insert(std::make_pair(uid, createCoin(0.f, 9.f, uid, 0)));
         uid = getUID();
         coins.insert(std::make_pair(uid, createCoin(0.f, 6.f, uid, 1)));
@@ -217,8 +218,24 @@ public:
         uid = getUID();
         coins.insert(std::make_pair(uid, createCoin(2.f, 2.f, uid, 0)));
 
+        uid = getUID();
+        coins.insert(std::make_pair(uid, createCoin(5.f, 5.f, uid, 0)));
 
-        m_currentCoin = &(coins[0]);
+        uid = getUID();
+        coins.insert(std::make_pair(uid, createCoin(5.f, 2.f, uid, 0)));
+        */
+
+        for (int i = 0; i < 15; i++) {
+            uid = getUID();
+            float LO = -30.f;
+            float HI = 30.f;
+            float x1 = LO + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (HI - LO)));
+            float y1 = LO + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (HI - LO)));
+            coins.insert(std::make_pair(uid, createCoin(x1, y1, uid, 0)));
+        }
+
+
+        m_currentCoin = &(coins.begin()->second);
     }
 
     int symmHash(short int a, short int b) {
@@ -384,11 +401,12 @@ public:
         std::vector<std::vector<b2Vec2> > c3 = c2.FindCycles(0, polygons, cyclesOut, coins);
         b2Vec2 v0;
         if (c3.size() > 0) {
-            v0 = c3[0][0];
-
-            for (auto &v : c3[0]) {
-                g_debugDraw.DrawSegment(v0, v,b2Color(1.f,1.f,1.f));
-                v0 = v;
+            for (auto &c : c3) {
+                v0 = c[0];
+                for (auto &v : c) {
+                    g_debugDraw.DrawSegment(v0, v, b2Color(1.f, 1.f, 1.f));
+                    v0 = v;
+                }
             }
         }
     }

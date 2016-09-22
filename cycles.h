@@ -9,7 +9,7 @@
 class cycles {
 public:
 
-    float proximityRadius = 10.0f;
+    float proximityRadius = 20.0f;
 
     bool calculatedCyclesThisPush = true;
 
