@@ -81,29 +81,58 @@ public:
 
     void sInterface() {
 
-        ImGui::SetNextWindowSize(ImVec2(100, 360), ImGuiSetCond_FirstUseEver);
-        ImGui::SetNextWindowPos(ImVec2(1200, 300), ImGuiSetCond_FirstUseEver);
-        ImGui::Begin("Force");
+        ImGui::SetNextWindowPos(ImVec2(g_camera.m_width-100,200));
+        ImGui::SetNextWindowSize(ImVec2(50, 400), ImGuiSetCond_FirstUseEver);
 
-        ImGui::VSliderFloat("Force", ImVec2(100, 300), &m_force, 0.f, 1.f);
+        ImGui::Begin("Force",nullptr, ImVec2(0, 0), 0.3f, ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoSavedSettings|ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::VSliderFloat("##force", ImVec2(50,350), &m_force, 0.f, m_forceLeft);
         ImGui::End();
 
-        ImGui::SetNextWindowSize(ImVec2(100, 360), ImGuiSetCond_FirstUseEver);
-        ImGui::SetNextWindowPos(ImVec2(1200, 300), ImGuiSetCond_FirstUseEver);
 
-        ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiSetCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(800, 360), ImGuiSetCond_FirstUseEver);
 
-        ImGui::Begin("Header");
+        ImGui::SetNextWindowPos(ImVec2(10,10));
+        ImGui::SetNextWindowSize(ImVec2(g_camera.m_width-20, 100), ImGuiSetCond_FirstUseEver);
+        if (!ImGui::Begin("HUD", nullptr, ImVec2(0,0), 0.3f, ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoSavedSettings))
+        {
+            ImGui::End();
+            return;
+        }
+
         ImGui::Text("Player: %i", m_currentPlayer);
-
+        ImGui::Separator();
+        ImGui::Text("Mouse Position: (%.1f,%.1f)", ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y);
+        ImGui::Text("Mouse Position in world : (%.2f,%.2f)", m_mouseWorld.x, m_mouseWorld.y);
         ImGui::End();
+
 
         if (m_showMenu) {
             ImGui::SetNextWindowSize(ImVec2(400, 200), ImGuiSetCond_FirstUseEver);
-            ImGui::SetNextWindowPos(ImVec2(1200, 300), ImGuiSetCond_FirstUseEver);
+            ImGui::SetNextWindowPos(ImVec2(10, 300), ImGuiSetCond_FirstUseEver);
             ImGui::Begin("Properties");
-            ImGui::SliderFloat("Force multiplier", &m_forceMult, 1000.f, 5000.f);
+            ImGui::Text("Force multiplier");
+            ImGui::SliderFloat("##fm", &m_forceMult, 1000.f, 5000.f);
+            ImGui::Separator();
+            if (m_currentCoin!= nullptr){
+                if (ImGui::CollapsingHeader("Current coin")) {
+                    ImGui::Text("id");
+                    ImGui::InputInt("##id", &(m_currentCoin->id));
+
+                    ImGui::Text("player");
+                    ImGui::InputInt("##player", &(m_currentCoin->player));
+
+                    static float pos[2] = {0.0f, 0.0f};
+                    static b2Vec2 posv;
+                    posv = m_currentCoin->wheel->GetPosition();
+                    pos[0] = posv.x;
+                    pos[1] = posv.y;
+                    ImGui::Text("position");
+                    ImGui::InputFloat2("##pos", pos);
+
+
+
+                }
+            }
+
             ImGui::End();
         }
 
@@ -522,7 +551,7 @@ public:
     float32 m_forceLeft = 1.f;
 
     float32 m_forceMult = 2500.f;
-    float32 m_showMenu = false;
+    float32 m_showMenu = true;
 
     int m_currentPlayer = 0;
 

@@ -11,6 +11,7 @@
       <sourceFolder url="file://$MODULE_DIR$/Test.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/RenderGL3.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/imgui.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/cycles.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/Test.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/graph2.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
