@@ -35,6 +35,8 @@
 #include "Test.h"
 #include "coin.h"
 
+#include "json.hpp"
+#include <fstream>
 
 class QueryCallback : public b2QueryCallback {
 public:
@@ -263,6 +265,19 @@ public:
             coins.insert(std::make_pair(uid, createCoin(x1, y1, uid, 0)));
         }
 
+
+        nlohmann::json j;
+
+        std::ifstream file;
+        file.open ("../level.cs", std::ios::in);
+        if (file){
+            j << file;
+
+            file.close();
+        }
+
+        std::string s1 =  j["type"];
+        coinsLog.AddLog(s1.c_str());
 
         m_currentCoin = &(coins.begin()->second);
     }
