@@ -277,7 +277,11 @@ public:
         }
 
         std::string s1 =  j["type"];
+
+        float* ar1 = j["pos"];
+
         coinsLog.AddLog(s1.c_str());
+        coinsLog.AddLog("\n");
 
         m_currentCoin = &(coins.begin()->second);
     }
