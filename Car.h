@@ -278,10 +278,11 @@ public:
 
         std::string s1 =  j["type"];
 
-        float* ar1 = j["pos"];
+        std::vector<float> ar1 = j["pos"];
 
         coinsLog.AddLog(s1.c_str());
         coinsLog.AddLog("\n");
+        printVector(ar1,"pos");
 
         m_currentCoin = &(coins.begin()->second);
     }
@@ -460,6 +461,23 @@ public:
     }
 
 
+    void printVector(std::vector<float> line,char* header = nullptr) {
+        std::string s1;
+        std::stringstream ss;
+        if (header!= nullptr){
+            ss << header;
+        };
+        ss << std::endl;
+        ss << "(";
+        for (auto it = line.begin(); it != line.end(); it++) {
+            ss << *it << ",";
+        }
+        ss << ")";
+        ss << std::endl;
+        coinsLog.AddLog(ss.str().c_str());
+    }
+
+
     void printVector(std::vector<int> line) {
         std::string s1;
         std::stringstream ss;
@@ -559,7 +577,7 @@ public:
     static Test *Create() {
 
         Car *c1 = new Car();
-        c1->testCgraph();
+        //c1->testCgraph();
         return c1;
     }
 
