@@ -9,5 +9,11 @@
   "type":"coin",
   "player":0,
   "pos":[0.0,4.0]
+ },
+ "coin3":
+ {
+  "type":"coin",
+  "player":1,
+  "pos":[0.0,-4.0]
  }
 }

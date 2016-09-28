@@ -83,6 +83,19 @@ public:
 
     void sInterface() {
 
+
+		if (ImGui::BeginMainMenuBar()) {
+			
+			if (ImGui::BeginMenu("File")) {
+				if (ImGui::MenuItem("Reload")) { loadLevel(); };
+				if (ImGui::MenuItem("Open", "Ctrl+O")) {}
+
+
+				ImGui::EndMenu();
+			}
+			ImGui::EndMainMenuBar();
+		}
+
         ImGui::SetNextWindowPos(ImVec2(g_camera.m_width-100,200));
         ImGui::SetNextWindowSize(ImVec2(50, 400), ImGuiSetCond_FirstUseEver);
 
@@ -92,7 +105,7 @@ public:
 
 
 
-        ImGui::SetNextWindowPos(ImVec2(10,10));
+        ImGui::SetNextWindowPos(ImVec2(10,30));
         ImGui::SetNextWindowSize(ImVec2(g_camera.m_width-20, 100), ImGuiSetCond_FirstUseEver);
         if (!ImGui::Begin("HUD", nullptr, ImVec2(0,0), 0.3f, ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoSavedSettings))
         {
@@ -193,6 +206,37 @@ public:
         return bb;
     };
 
+	void loadLevel(char* name = "level.cs"){
+
+		coins.clear();
+
+		nlohmann::json j;
+
+		std::ifstream file;
+		file.open(std::string("../../") + std::string(name), std::ios::in);
+		if (file) {
+			j << file;
+
+			file.close();
+		}
+
+		for (auto c : j) {
+			std::string s1 = c["type"];
+
+			std::vector<float> ar1 = c["pos"];
+
+			coinsLog.AddLog(s1.c_str());
+			coinsLog.AddLog("\n");
+			printVector(ar1, "pos");
+
+			int uid = getUID();
+			coins.insert(std::make_pair(uid, createCoin(ar1[0], ar1[1], uid, c["player"])));
+		}
+
+
+
+	};
+
     Car() {
 
 
@@ -237,7 +281,7 @@ public:
 
 
         //coins = new std::vector<coin>;
-        int uid = getUID();
+        //int uid = getUID();
         /*
         coins.insert(std::make_pair(uid, createCoin(0.f, 9.f, uid, 0)));
         uid = getUID();
@@ -255,7 +299,7 @@ public:
         uid = getUID();
         coins.insert(std::make_pair(uid, createCoin(5.f, 2.f, uid, 0)));
         */
-
+		/*
         for (int i = 0; i < 15; i++) {
             uid = getUID();
             float LO = -30.f;
@@ -264,28 +308,12 @@ public:
             float y1 = LO + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (HI - LO)));
             coins.insert(std::make_pair(uid, createCoin(x1, y1, uid, 0)));
         }
-
-
-        nlohmann::json j;
-
-        std::ifstream file;
-        file.open ("../level.cs", std::ios::in);
-        if (file){
-            j << file;
-
-            file.close();
-        }
-
-        std::string s1 =  j["type"];
-
-        std::vector<float> ar1 = j["pos"];
-
-        coinsLog.AddLog(s1.c_str());
-        coinsLog.AddLog("\n");
-        printVector(ar1,"pos");
+		*/
+		loadLevel();
+		
 
         m_currentCoin = &(coins.begin()->second);
-    }
+	};
 
     int symmHash(short int a, short int b) {
         if (a > b)
