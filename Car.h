@@ -84,31 +84,44 @@ public:
     void sInterface() {
 
 
-		if (ImGui::BeginMainMenuBar()) {
-			
-			if (ImGui::BeginMenu("File")) {
-				if (ImGui::MenuItem("Reload")) { loadLevel(); };
-				if (ImGui::MenuItem("Open", "Ctrl+O")) {}
+        if (ImGui::BeginMainMenuBar()) {
 
+            if (ImGui::BeginMenu("File")) {
+                if (ImGui::MenuItem("Reload")) { loadLevel(); };
+                if (ImGui::BeginMenu("Open", "Ctrl+O")) {
+                    static bool enabled = true;
+                    ImGui::MenuItem("Enabled", "", &enabled);
+                    ImGui::BeginChild("child", ImVec2(0, 60), true);
+                    for (int i = 0; i < 10; i++)
+                        ImGui::Text("Scrolling Text %d", i);
+                    ImGui::EndChild();
+                    static float f = 0.5f;
+                    static int n = 0;
+                    ImGui::SliderFloat("Value", &f, 0.0f, 1.0f);
+                    ImGui::InputFloat("Input", &f, 0.1f);
+                    ImGui::Combo("Combo", &n, "Yes\0No\0Maybe\0\0");
+                    ImGui::EndMenu();
+                }
+                ImGui::EndMenu();
+            }
+            ImGui::EndMainMenuBar();
+        }
 
-				ImGui::EndMenu();
-			}
-			ImGui::EndMainMenuBar();
-		}
-
-        ImGui::SetNextWindowPos(ImVec2(g_camera.m_width-100,200));
+        ImGui::SetNextWindowPos(ImVec2(g_camera.m_width - 100, 200));
         ImGui::SetNextWindowSize(ImVec2(50, 400), ImGuiSetCond_FirstUseEver);
 
-        ImGui::Begin("Force",nullptr, ImVec2(0, 0), 0.3f, ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoSavedSettings|ImGuiWindowFlags_AlwaysAutoResize);
-        ImGui::VSliderFloat("##force", ImVec2(50,350), &m_force, 0.f, m_forceLeft);
+        ImGui::Begin("Force", nullptr, ImVec2(0, 0), 0.3f,
+                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+                     ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::VSliderFloat("##force", ImVec2(50, 350), &m_force, 0.f, m_forceLeft);
         ImGui::End();
 
 
-
-        ImGui::SetNextWindowPos(ImVec2(10,30));
-        ImGui::SetNextWindowSize(ImVec2(g_camera.m_width-20, 100), ImGuiSetCond_FirstUseEver);
-        if (!ImGui::Begin("HUD", nullptr, ImVec2(0,0), 0.3f, ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoSavedSettings))
-        {
+        ImGui::SetNextWindowPos(ImVec2(10, 30));
+        ImGui::SetNextWindowSize(ImVec2(g_camera.m_width - 20, 100), ImGuiSetCond_FirstUseEver);
+        if (!ImGui::Begin("HUD", nullptr, ImVec2(0, 0), 0.3f,
+                          ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+                          ImGuiWindowFlags_NoSavedSettings)) {
             ImGui::End();
             return;
         }
@@ -127,7 +140,7 @@ public:
             ImGui::Text("Force multiplier");
             ImGui::SliderFloat("##fm", &m_forceMult, 1000.f, 5000.f);
             ImGui::Separator();
-            if (m_currentCoin!= nullptr){
+            if (m_currentCoin != nullptr) {
                 if (ImGui::CollapsingHeader("Current coin")) {
                     ImGui::Text("id");
                     ImGui::InputInt("##id", &(m_currentCoin->id));
@@ -142,7 +155,6 @@ public:
                     pos[1] = posv.y;
                     ImGui::Text("position");
                     ImGui::InputFloat2("##pos", pos);
-
 
 
                 }
@@ -206,36 +218,49 @@ public:
         return bb;
     };
 
-	void loadLevel(char* name = "level.cs"){
+    void cleanup() {
+        for (auto c: coins) {
+            m_world->DestroyBody(c.second.wheel);
+        }
+        coins.clear();
+    };
 
-		coins.clear();
+    void loadLevel(char *name = "level.cs") {
 
-		nlohmann::json j;
+        cleanup();
 
-		std::ifstream file;
-		file.open(std::string("../../") + std::string(name), std::ios::in);
-		if (file) {
-			j << file;
+        nlohmann::json j;
 
-			file.close();
-		}
+        std::ifstream file;
+        file.open(std::string("../") + std::string(name), std::ios::in);
+        if (file) {
+            j << file;
+            file.close();
+        }
 
-		for (auto c : j) {
-			std::string s1 = c["type"];
+        if (j.find("force") != j.end()) {
+            m_forceLeft=j["force"];
+            m_force=m_forceLeft;
+        }
 
-			std::vector<float> ar1 = c["pos"];
+        for (auto c : j) {
 
-			coinsLog.AddLog(s1.c_str());
-			coinsLog.AddLog("\n");
-			printVector(ar1, "pos");
+            if (c.is_object()) {
+                std::string s1 = c["type"];
 
-			int uid = getUID();
-			coins.insert(std::make_pair(uid, createCoin(ar1[0], ar1[1], uid, c["player"])));
-		}
+                std::vector<float> ar1 = c["pos"];
+
+                coinsLog.AddLog(s1.c_str());
+                coinsLog.AddLog("\n");
+                printVector(ar1, "pos");
+
+                int uid = getUID();
+                coins.insert(std::make_pair(uid, createCoin(ar1[0], ar1[1], uid, c["player"])));
+            }
+        }
 
 
-
-	};
+    };
 
     Car() {
 
@@ -299,7 +324,7 @@ public:
         uid = getUID();
         coins.insert(std::make_pair(uid, createCoin(5.f, 2.f, uid, 0)));
         */
-		/*
+        /*
         for (int i = 0; i < 15; i++) {
             uid = getUID();
             float LO = -30.f;
@@ -308,12 +333,12 @@ public:
             float y1 = LO + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (HI - LO)));
             coins.insert(std::make_pair(uid, createCoin(x1, y1, uid, 0)));
         }
-		*/
-		loadLevel();
-		
+        */
+        loadLevel();
+
 
         m_currentCoin = &(coins.begin()->second);
-	};
+    };
 
     int symmHash(short int a, short int b) {
         if (a > b)
@@ -489,10 +514,10 @@ public:
     }
 
 
-    void printVector(std::vector<float> line,char* header = nullptr) {
+    void printVector(std::vector<float> line, char *header = nullptr) {
         std::string s1;
         std::stringstream ss;
-        if (header!= nullptr){
+        if (header != nullptr) {
             ss << header;
         };
         ss << std::endl;

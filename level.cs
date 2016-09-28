@@ -1,4 +1,5 @@
-{"coin1":
+{"force":1.0,
+ "coin1":
 {
  "type":"coin",
   "player":0,
