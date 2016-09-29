@@ -1,1 +1,5 @@
 swarm/
+Debug/glew32.dll
+Debug/swarm.exe
+Debug/swarm.ilk
+Debug/swarm.pdb

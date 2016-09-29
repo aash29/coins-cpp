@@ -38,6 +38,8 @@
 #include "json.hpp"
 #include <fstream>
 
+#include "tinydir.h"
+
 class QueryCallback : public b2QueryCallback {
 public:
     QueryCallback(const b2Vec2 &point) {
@@ -88,20 +90,7 @@ public:
 
             if (ImGui::BeginMenu("File")) {
                 if (ImGui::MenuItem("Reload")) { loadLevel(); };
-                if (ImGui::BeginMenu("Open", "Ctrl+O")) {
-                    static bool enabled = true;
-                    ImGui::MenuItem("Enabled", "", &enabled);
-                    ImGui::BeginChild("child", ImVec2(0, 60), true);
-                    for (int i = 0; i < 10; i++)
-                        ImGui::Text("Scrolling Text %d", i);
-                    ImGui::EndChild();
-                    static float f = 0.5f;
-                    static int n = 0;
-                    ImGui::SliderFloat("Value", &f, 0.0f, 1.0f);
-                    ImGui::InputFloat("Input", &f, 0.1f);
-                    ImGui::Combo("Combo", &n, "Yes\0No\0Maybe\0\0");
-                    ImGui::EndMenu();
-                }
+				ImGui::MenuItem("Open", "Ctrl+O",&m_showOpenDialog);
                 ImGui::EndMenu();
             }
             ImGui::EndMainMenuBar();
@@ -162,6 +151,60 @@ public:
 
             ImGui::End();
         }
+
+		if (m_showOpenDialog) {
+			ImGui::SetNextWindowSize(ImVec2(500, 440), ImGuiSetCond_FirstUseEver);
+
+			if (ImGui::Begin("Open level", &m_showOpenDialog)) {
+
+				// left
+				static int selected = 0;
+				ImGui::BeginChild("left pane", ImVec2(150, 0), true);
+				tinydir_dir dir;
+				if (tinydir_open(&dir, "../") != -1) {
+					tinydir_file file;
+					int i=0;
+					while (dir.has_next)
+					{
+						if (tinydir_readfile(&dir, &file) != -1) {
+							//ImGui::TextWrapped(file.name);
+							if (ImGui::Selectable(file.name, selected == i))
+								selected = i;
+						}
+						tinydir_next(&dir);
+						i++;
+					}
+				}
+				
+				ImGui::EndChild();
+				ImGui::SameLine();
+
+				// right
+				ImGui::BeginGroup();
+				ImGui::BeginChild("item view",
+					ImVec2(0, -ImGui::GetItemsLineHeightWithSpacing())); // Leave room for 1 line below us
+				ImGui::Text("MyObject: %d", selected);
+				ImGui::Separator();
+
+				tinydir_file_open
+						if (tinydir_readfile(&dir, &file) != -1) {
+							ImGui::TextWrapped(file.name);
+						}
+						tinydir_next(&dir);
+					}
+				}
+
+				
+				ImGui::EndChild();
+				ImGui::BeginChild("buttons");
+				if (ImGui::Button("Revert")) {}
+				ImGui::SameLine();
+				if (ImGui::Button("Save")) {}
+				ImGui::EndChild();
+				ImGui::EndGroup();
+			}
+			ImGui::End();
+		}
 
         coinsLog.Draw("Log");
 
@@ -639,9 +682,10 @@ public:
 
     float32 m_force = 1.f;
     float32 m_forceLeft = 1.f;
-
     float32 m_forceMult = 2500.f;
-    float32 m_showMenu = true;
+
+    bool m_showMenu = true;
+	bool m_showOpenDialog = false;
 
     int m_currentPlayer = 0;
 
