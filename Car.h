@@ -158,7 +158,7 @@ public:
 			if (ImGui::Begin("Open level", &m_showOpenDialog)) {
 
 				// left
-				static int selected = 0;
+				static char selected[100] = "";
 				ImGui::BeginChild("left pane", ImVec2(150, 0), true);
 				tinydir_dir dir;
 				if (tinydir_open(&dir, "../") != -1) {
@@ -168,8 +168,8 @@ public:
 					{
 						if (tinydir_readfile(&dir, &file) != -1) {
 							//ImGui::TextWrapped(file.name);
-							if (ImGui::Selectable(file.name, selected == i))
-								selected = i;
+							if (ImGui::Selectable(file.name, !strcmp(selected,file.name)))
+								strcpy(selected, file.name);
 						}
 						tinydir_next(&dir);
 						i++;
@@ -183,16 +183,33 @@ public:
 				ImGui::BeginGroup();
 				ImGui::BeginChild("item view",
 					ImVec2(0, -ImGui::GetItemsLineHeightWithSpacing())); // Leave room for 1 line below us
-				ImGui::Text("MyObject: %d", selected);
+				ImGui::Text("Selected level: %s", selected);
 				ImGui::Separator();
 
-				tinydir_file_open
+				char pathToFile[100] = "";
+				strcat(pathToFile, "../");
+				strcat(pathToFile, selected);
+
+				std::ifstream t(pathToFile);
+				std::stringstream buffer;
+				buffer << t.rdbuf();
+
+				coinsLog.AddLog(buffer.str().c_str());
+				ImGui::TextWrapped(buffer.str().c_str());
+
+
+				/*
+				if (tinydir_open(&dir, "../") != -1) {
+					tinydir_file file;
+					while (dir.has_next)
+					{
 						if (tinydir_readfile(&dir, &file) != -1) {
 							ImGui::TextWrapped(file.name);
 						}
 						tinydir_next(&dir);
 					}
 				}
+				*/
 
 				
 				ImGui::EndChild();
