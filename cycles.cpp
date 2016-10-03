@@ -1,6 +1,10 @@
 #include "cycles.h"
 
 
+cycles::cycles(std::map<int, coin>& allCoins)
+{
+	m_coins = allCoins;
+};
 
     bool cycles::IsPointInPolygon(b2Vec2 p, std::vector<b2Vec2> polygon) {
         float minX = polygon[0].x;
@@ -42,25 +46,25 @@
 
         return true;
     }
-/*
 
-	void deleteTrappedCoins(int player, std::vector<std::vector<b2Vec2>> cCycles)
+	
+	void cycles::deleteTrappedCoins(int player, std::vector<std::vector<b2Vec2>> cCycles)
 	{
-		var coins = GameObject.FindGameObjectsWithTag("coin");
+		//var coins = GameObject.FindGameObjectsWithTag("coin");
 
-		std::vector<int> protectedCycles = new std::vector<int>();
+		std::vector<int> protectedCycles = std::vector<int>();
 
 
 		
 
-		for ( int j = 0;  j<coinCycles[player%2].Count; j++)
+		for ( int j = 0;  j<coinCycles[player%2].size(); j++)
 		{
-			for (int k = 0; k<coinCycles[(player+1)%2].Count; k++)
+			for (int k = 0; k<coinCycles[(player+1)%2].size(); k++)
 			{
-				if (IsPolygonInPolygon(coinCycles[player%2][j].ToArray(), coinCycles[(player+1)%2][k].ToArray()) && !(protectedCycles.Contains(j)) )
+				if ( (IsPolygonInPolygon(coinCycles[player%2][j], coinCycles[(player+1)%2][k])) && (std::find(protectedCycles.begin(), protectedCycles.end(),j)!= protectedCycles.end() ))
 				{
-
-					foreach (int i in cyclesList[player%2][j].Distinct())
+					auto b1 = std::unique(cyclesList[player % 2][j].begin(), cyclesList[player % 2][j].end());
+					for (auto i : b1)
 					{
 						GameObject.Find("root1").GetComponent<setupLevel>().coinDict[i].GetComponent<Multitag> ().TagsSet.Add("dead");
 						//GetComponentInParent<Player>().coinDict.Remove(i);
@@ -114,8 +118,8 @@
 
 		}
 	}
-
-
+	*/
+	/*
 	public void cleanup()
 	{
 		std::vector<GameObject> deadCoins = Multitag.FindGameObjectsWithTag ("dead").ToList ();
@@ -146,7 +150,7 @@
 
 
 
-		deleteTrappedCoins (0, coinCycles [1]);
+		 (0, coinCycles [1]);
 		deleteTrappedCoins (1, coinCycles [0]);
 
 		calculatedCyclesThisPush = true;
@@ -159,8 +163,7 @@
 
 */
     std::vector<std::vector<b2Vec2> > cycles::FindCycles(int player, std::vector<std::vector<b2Vec2>> polygons,
-                                                 std::vector<std::vector<int> > cyclesOut,
-                                                 std::map<int, coin> &allCoins) {
+                                                 std::vector<std::vector<int> > cyclesOut) {
         //GameObject[] allCoins;
 
         std::vector<coin> coins = std::vector<coin>();
@@ -176,7 +179,7 @@
         std::vector<b2Vec2> v2 = std::vector<b2Vec2>();
 
 
-        for (auto &kv: allCoins) {
+        for (auto &kv: m_coins) {
             int cp1 = kv.second.player;
             if (cp1 == player) {
                 v2.push_back(kv.second.wheel->GetPosition());
@@ -357,83 +360,7 @@
 
     }
 
-    /*
-    // Will be called after all regular rendering is done
-     void OnRenderObject ()
-    {
-        CreateLineMaterial ();
-        // Apply the line material
-        lineMaterial.SetPass (0);
-
-        //GL.PushMatrix ();
-        // Set transformation matrix for drawing to
-        // match our transform
-        //GL.MultMatrix (transform.localToWorldMatrix);
-
-        // Draw lines
-
-
-        try {
-
-
-        foreach (var v1 in allVertices[0])
-        {
-            GL.Begin (GL.QUADS);
-                GL.Color (new Color (0, 0.1f, 0, 0.8F));
-                GL.Vertex3 (v1.x-0.05f, 0.2f, v1.y-0.05f);
-                GL.Vertex3 (v1.x-0.05f, 0.2f, v1.y+0.05f);
-                GL.Vertex3 (v1.x+0.05f, 0.2f, v1.y+0.05f);
-                GL.Vertex3 (v1.x+0.05f, 0.2f, v1.y-0.05f);
-            GL.End ();
-        }
-
-
-
-        }
-        catch {};
-
-        Color[] colorArray = new Color[3];
-        colorArray [0] = new Color (1.0f, 0.0f, 0.0f, 1f);
-        colorArray [1] = new Color (0.0f, 1.0f, 0.0f, 1f);
-        colorArray [2] = new Color (0.0f, 0.0f, 1.0f, 1f);
-        int ccolor = 0;
-        if (coinCycles [0] != null) {
-                        foreach (var cc in coinCycles[0]) {
-
-                                GL.Begin (GL.LINES);
-                                for (int i = 1; i < cc.size(); i++) {
-                                        // Vertex colors change from red to green
-                                        GL.Color (colorArray[ccolor%3]);
-
-                                        GL.Vertex3 (cc [i - 1].x, 0.2f, cc [i - 1].y);
-                                        GL.Vertex3 (cc [i].x, 0.2f, cc [i].y);
-                                }
-                                GL.End ();
-                                ccolor++;
-                        }
-                }
-
-        if (coinCycles [1] != null) {
-                        foreach (var cc in coinCycles[1]) {
-
-                                GL.Begin (GL.LINES);
-                                for (int i = 1; i < cc.size(); i++) {
-                                        // Vertex colors change from red to green
-                                        GL.Color (new Color (0.0f, 0.1f, 1.0f, 0.8F));
-                                        // One vertex at transform position
-                                        //GL.Vertex3 (0, 0, 0);
-                                        // Another vertex at edge of circle
-                                        GL.Vertex3 (cc[i-1].x, 0.2f, cc[i-1].y);
-                                        GL.Vertex3 (cc[i].x, 0.2f, cc[i].y);
-                                }
-                                GL.End ();
-                        }
-                }
-
-
-        //GL.PopMatrix ();
-    }
-    */
+   
 
     void cycles::removeDuplicates(std::vector<std::vector<int>> &g2, std::vector<b2Vec2> v2) {
         std::vector<int> edge1, edge2;

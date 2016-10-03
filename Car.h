@@ -287,6 +287,7 @@ public:
                 m_world->DestroyBody(c.second.wheel);
             }
             coins.clear();
+			m_currentCoin = nullptr;
         };
 
         void loadLevel(char *name = "level.cs") {
@@ -371,7 +372,7 @@ public:
 
 
             //coins = new std::vector<coin>;
-            //int uid = getUID();
+
             /*
             coins.insert(std::make_pair(uid, createCoin(0.f, 9.f, uid, 0)));
             uid = getUID();
@@ -389,18 +390,30 @@ public:
             uid = getUID();
             coins.insert(std::make_pair(uid, createCoin(5.f, 2.f, uid, 0)));
             */
-            /*
-            for (int i = 0; i < 15; i++) {
-                uid = getUID();
-                float LO = -30.f;
-                float HI = 30.f;
-                float x1 = LO + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (HI - LO)));
-                float y1 = LO + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (HI - LO)));
-                coins.insert(std::make_pair(uid, createCoin(x1, y1, uid, 0)));
-            }
-            */
-            loadLevel();
 
+            
+            loadLevel();
+			/*
+			int uid = getUID();
+
+			for (int i = 0; i < 7; i++) {
+				uid = getUID();
+				float LO = -30.f;
+				float HI = 30.f;
+				float x1 = LO + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (HI - LO)));
+				float y1 = LO + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (HI - LO)));
+				coins.insert(std::make_pair(uid, createCoin(x1, y1, uid, 0)));
+			}
+
+			for (int i = 0; i < 7; i++) {
+				uid = getUID();
+				float LO = -30.f;
+				float HI = 30.f;
+				float x1 = LO + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (HI - LO)));
+				float y1 = LO + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (HI - LO)));
+				coins.insert(std::make_pair(uid, createCoin(x1, y1, uid, 1)));
+			}
+			*/
 
             m_currentCoin = &(coins.begin()->second);
         };
@@ -561,11 +574,11 @@ public:
         }
 
         void DrawCycles() {
-            static cycles c2 = cycles();
+            static cycles c2 = cycles(coins);
             static std::vector<std::vector<b2Vec2>> polygons;
             static std::vector<std::vector<int> > cyclesOut;
 
-            std::vector<std::vector<b2Vec2> > c3 = c2.FindCycles(0, polygons, cyclesOut, coins);
+            std::vector<std::vector<b2Vec2> > c3 = c2.FindCycles(0, polygons, cyclesOut);
             b2Vec2 v0;
             if (c3.size() > 0) {
                 for (auto &c : c3) {
@@ -684,8 +697,8 @@ public:
 
             std::vector<std::vector<b2Vec2>> polygons;
             std::vector<std::vector<int> > cyclesOut;
-            cycles c2 = cycles();
-            std::vector<std::vector<b2Vec2> > c3 = c2.FindCycles(0, polygons, cyclesOut, coins);
+            cycles c2 = cycles(coins);
+            std::vector<std::vector<b2Vec2> > c3 = c2.FindCycles(0, polygons, cyclesOut);
             for (auto &v : c3) {
                 printVector(v);
             }
