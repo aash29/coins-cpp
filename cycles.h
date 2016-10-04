@@ -35,6 +35,7 @@ public:
 
 	void deleteTrappedCoins(int player, std::vector<std::vector<b2Vec2>> cCycles);
 
+
     void removeDuplicates(std::vector<std::vector<int>> &g2, std::vector<b2Vec2> v2) ;
 
     int addOrGetExisting(b2Vec2 vi, std::vector<b2Vec2> &v2) ;

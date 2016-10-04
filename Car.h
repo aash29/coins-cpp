@@ -282,6 +282,17 @@ public:
             return bb;
         };
 
+		void removeDeadCoins()
+		{
+			for (auto c : coins) {
+				if (c.second.dead){
+					m_world->DestroyBody(c.second.wheel);
+					coins.erase(c.first);
+				}
+			}
+		}
+
+
         void cleanup() {
             for (auto c: coins) {
                 m_world->DestroyBody(c.second.wheel);
@@ -589,6 +600,8 @@ public:
                     }
                 }
             }
+			c2.deleteTrappedCoins(1, c3);
+			removeDeadCoins();
         }
 
 

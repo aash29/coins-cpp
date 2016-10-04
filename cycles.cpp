@@ -61,13 +61,14 @@ cycles::cycles(std::map<int, coin>& allCoins)
 		{
 			for (int k = 0; k<coinCycles[(player+1)%2].size(); k++)
 			{
-				if ( (IsPolygonInPolygon(coinCycles[player%2][j], coinCycles[(player+1)%2][k])) && (std::find(protectedCycles.begin(), protectedCycles.end(),j)!= protectedCycles.end() ))
+				if ( (IsPolygonInPolygon(coinCycles[player%2][j], coinCycles[(player+1)%2][k])) && (std::find(protectedCycles.begin(), protectedCycles.end(),j)== protectedCycles.end() ))
 				{
-					auto b1 = std::unique(cyclesList[player % 2][j].begin(), cyclesList[player % 2][j].end());
-					for (auto i : b1)
+					//auto b1 = std::unique(cyclesList[player % 2][j].begin(), cyclesList[player % 2][j].end());
+					for (auto i : cyclesList[player % 2][j])
 					{
-						GameObject.Find("root1").GetComponent<setupLevel>().coinDict[i].GetComponent<Multitag> ().TagsSet.Add("dead");
+						//GameObject.Find("root1").GetComponent<setupLevel>().coinDict[i].GetComponent<Multitag> ().TagsSet.Add("dead");
 						//GetComponentInParent<Player>().coinDict.Remove(i);
+						m_coins[i].dead = true;
 					}
 				}
 				
@@ -75,19 +76,19 @@ cycles::cycles(std::map<int, coin>& allCoins)
 
 		}
 
-		foreach (var c0 in coins)
+		for (auto c0: m_coins)
 		{
 
-			int cp1 = c0.GetComponent<coin>().player;
-			if (coinCycles[(player) % 2] != null)
+			int cp1 = c0.second.player;
+			if (coinCycles[(player) % 2].size()>0)
 			{
-				foreach (var cc in coinCycles[(player) % 2].ToArray())
+				for (auto cc : coinCycles[(player) % 2])
 				{
-					if (IsPointInPolygon(c0.transform.position, cc.ToArray()))
+					if (IsPointInPolygon(c0.second.wheel->GetPosition(), cc))
 					{
 						if ((cp1 == player) )
 						{
-							c0.GetComponent<Multitag>().TagsSet.Add("connected");
+							c0.second.connected=true;
 						}
 
 					}
@@ -98,18 +99,18 @@ cycles::cycles(std::map<int, coin>& allCoins)
 	
 
 		
-		foreach (var c0 in coins) 
+		for (auto c0 : m_coins) 
 		{
-			int cp1 = c0.GetComponent<coin> ().player;
-			if (cCycles!=null)
+			int cp1 = c0.second.player;
+			if (cCycles.size()>0)
 			{
-				foreach (var cc in cCycles)
+				for (auto cc : cCycles)
 				{
-					if (IsPointInPolygon(c0.transform.position, cc.ToArray()))
+					if (IsPointInPolygon(c0.second.wheel->GetPosition(), cc))
 					{
-							if ((cp1==player) && !c0.GetComponent<Multitag>().TagsSet.Contains("connected"))
+							if ((cp1==player) && (!c0.second.connected))
 							{
-								c0.GetComponent<Multitag> ().TagsSet.Add("dead");
+								c0.second.dead=true;
 							}
 
 					}
@@ -118,22 +119,10 @@ cycles::cycles(std::map<int, coin>& allCoins)
 
 		}
 	}
-	*/
-	/*
-	public void cleanup()
-	{
-		std::vector<GameObject> deadCoins = Multitag.FindGameObjectsWithTag ("dead").ToList ();
 
-		for (int i=deadCoins.size-1; i>-1; i--)
-		{
-			var c1 = deadCoins [i];
-			int deadKey = GameObject.Find("root1").GetComponent<setupLevel>().coinDict.FirstOrDefault(x => x.Value == c1).Key;
-			GameObject.Find("root1").GetComponent<setupLevel>().coinDict.Remove(deadKey);
-			c1.GetComponent<Multitag> ().TagsSet.Clear ();
-			Destroy (c1);
-		}
-	}
-*/
+	
+
+
 
 /*
 	public void Update()

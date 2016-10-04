@@ -13,5 +13,6 @@ struct coin {
     b2Color color;
     float buffer[100];
     bool connected = false;
+	bool dead = false;
 };
 #endif //COINS_COIN_H
