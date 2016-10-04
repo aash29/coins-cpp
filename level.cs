@@ -24,5 +24,19 @@
   "type":"coin",
   "player":1,
   "pos":[0.0,-4.0]
+ },
+
+ "coin5":
+ {
+  "type":"coin",
+  "player":1,
+  "pos":[0.0,4.0]
+ },
+  "coin6":
+ {
+  "type":"coin",
+  "player":1,
+  "pos":[-4.0,0.0]
  }
+
 }

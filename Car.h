@@ -284,10 +284,14 @@ public:
 
 		void removeDeadCoins()
 		{
-			for (auto c : coins) {
-				if (c.second.dead){
-					m_world->DestroyBody(c.second.wheel);
-					coins.erase(c.first);
+			for (auto c = coins.begin(); c != coins.end();) {
+				if (c->second.dead){
+					m_world->DestroyBody(c->second.wheel);
+					c=coins.erase(c);
+				}
+				else
+				{
+					++c;
 				}
 			}
 		}
@@ -518,6 +522,7 @@ public:
                         m_currentCoin->wheel->ApplyForceToCenter(f1, true);
                         m_forceLeft = m_forceLeft - m_force;
                         m_force = m_forceLeft;
+						m_currentCoin = nullptr;
                     }
                 }
             }
@@ -585,14 +590,17 @@ public:
         }
 
         void DrawCycles() {
-            static cycles c2 = cycles(coins);
+            cycles c2 = cycles(&coins);
             static std::vector<std::vector<b2Vec2>> polygons;
             static std::vector<std::vector<int> > cyclesOut;
 
-            std::vector<std::vector<b2Vec2> > c3 = c2.FindCycles(0, polygons, cyclesOut);
+			c2.FindCycles(0, c2.coinCycles[0], c2.cyclesList[0]);
+			c2.FindCycles(1, c2.coinCycles[1], c2.cyclesList[1]);
+
+            //std::vector<std::vector<b2Vec2> > c3 = c2.FindCycles(0, polygons, cyclesOut);
             b2Vec2 v0;
-            if (c3.size() > 0) {
-                for (auto &c : c3) {
+            if (c2.coinCycles[0].size() > 0) {
+                for (auto &c : c2.coinCycles[0]) {
                     v0 = c[0];
                     for (auto &v : c) {
                         g_debugDraw.DrawSegment(v0, v, b2Color(1.f, 1.f, 1.f));
@@ -600,9 +608,22 @@ public:
                     }
                 }
             }
-			c2.deleteTrappedCoins(1, c3);
+
+			if (c2.coinCycles[1].size() > 0) {
+				for (auto &c : c2.coinCycles[1]) {
+					v0 = c[0];
+					for (auto &v : c) {
+						g_debugDraw.DrawSegment(v0, v, b2Color(1.f, 1.f, 1.f));
+						v0 = v;
+					}
+				}
+			}
+			c2.deleteTrappedCoins(1, c2.coinCycles[0]);
+			c2.deleteTrappedCoins(0, c2.coinCycles[1]);
 			removeDeadCoins();
+			//c2.;
         }
+
 
 
         void printVector(std::vector<float> line, char *header = nullptr) {
@@ -710,7 +731,7 @@ public:
 
             std::vector<std::vector<b2Vec2>> polygons;
             std::vector<std::vector<int> > cyclesOut;
-            cycles c2 = cycles(coins);
+            cycles c2 = cycles(&coins);
             std::vector<std::vector<b2Vec2> > c3 = c2.FindCycles(0, polygons, cyclesOut);
             for (auto &v : c3) {
                 printVector(v);

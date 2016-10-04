@@ -9,7 +9,7 @@
 class cycles {
 public:
 
-	std::map<int, coin> m_coins;
+	std::map<int, coin>* m_coins;
 
     float proximityRadius = 20.0f;
 
@@ -23,15 +23,15 @@ public:
 
     std::vector<b2Vec2> *allVertices = new std::vector<b2Vec2>[2];
 
-	cycles(std::map<int, coin> &allCoins);
+	cycles(std::map<int, coin> *allCoins);
 
 
     bool IsPointInPolygon(b2Vec2 p, std::vector<b2Vec2> polygon);
 
     bool IsPolygonInPolygon(std::vector<b2Vec2> p1, std::vector<b2Vec2> p2);
 
-    std::vector<std::vector<b2Vec2> > FindCycles(int player, std::vector<std::vector<b2Vec2>> polygons,
-                                                 std::vector<std::vector<int> > cyclesOut);
+    std::vector<std::vector<b2Vec2> > FindCycles(int player, std::vector<std::vector<b2Vec2>> &polygons,
+                                                 std::vector<std::vector<int> > &cyclesOut);
 
 	void deleteTrappedCoins(int player, std::vector<std::vector<b2Vec2>> cCycles);
 

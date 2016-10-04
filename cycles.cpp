@@ -1,7 +1,7 @@
 #include "cycles.h"
 
 
-cycles::cycles(std::map<int, coin>& allCoins)
+cycles::cycles(std::map<int, coin>* allCoins)
 {
 	m_coins = allCoins;
 };
@@ -68,7 +68,7 @@ cycles::cycles(std::map<int, coin>& allCoins)
 					{
 						//GameObject.Find("root1").GetComponent<setupLevel>().coinDict[i].GetComponent<Multitag> ().TagsSet.Add("dead");
 						//GetComponentInParent<Player>().coinDict.Remove(i);
-						m_coins[i].dead = true;
+						(*m_coins)[i].dead = true;
 					}
 				}
 				
@@ -76,7 +76,7 @@ cycles::cycles(std::map<int, coin>& allCoins)
 
 		}
 
-		for (auto c0: m_coins)
+		for (auto c0: *m_coins)
 		{
 
 			int cp1 = c0.second.player;
@@ -88,7 +88,8 @@ cycles::cycles(std::map<int, coin>& allCoins)
 					{
 						if ((cp1 == player) )
 						{
-							c0.second.connected=true;
+							//c0.second.connected=true;
+							m_coins->at(c0.first).connected = true;
 						}
 
 					}
@@ -99,7 +100,7 @@ cycles::cycles(std::map<int, coin>& allCoins)
 	
 
 		
-		for (auto c0 : m_coins) 
+		for (auto c0 : *m_coins) 
 		{
 			int cp1 = c0.second.player;
 			if (cCycles.size()>0)
@@ -110,7 +111,8 @@ cycles::cycles(std::map<int, coin>& allCoins)
 					{
 							if ((cp1==player) && (!c0.second.connected))
 							{
-								c0.second.dead=true;
+								//c0.second.dead=true;
+								m_coins->at(c0.first).dead = true;
 							}
 
 					}
@@ -151,11 +153,11 @@ cycles::cycles(std::map<int, coin>& allCoins)
 	}
 
 */
-    std::vector<std::vector<b2Vec2> > cycles::FindCycles(int player, std::vector<std::vector<b2Vec2>> polygons,
-                                                 std::vector<std::vector<int> > cyclesOut) {
+    std::vector<std::vector<b2Vec2> > cycles::FindCycles(int player, std::vector<std::vector<b2Vec2>> &polygons,
+                                                 std::vector<std::vector<int> > &cyclesOut) {
         //GameObject[] allCoins;
 
-        std::vector<coin> coins = std::vector<coin>();
+        std::vector<int> coins = std::vector<int>();
         std::vector<int> subst = std::vector<int>();
 
         //allCoins = GameObject.FindGameObjectsWithTag ("coin");
@@ -168,11 +170,11 @@ cycles::cycles(std::map<int, coin>& allCoins)
         std::vector<b2Vec2> v2 = std::vector<b2Vec2>();
 
 
-        for (auto &kv: m_coins) {
+        for (auto &kv: *m_coins) {
             int cp1 = kv.second.player;
             if (cp1 == player) {
                 v2.push_back(kv.second.wheel->GetPosition());
-                coins.push_back(kv.second);
+                coins.push_back(kv.first);
                 subst.push_back(kv.first);
             }
         }
@@ -184,10 +186,10 @@ cycles::cycles(std::map<int, coin>& allCoins)
         int edgeNum = 0;
 
         for (int i = 0; i < coins.size(); i++) {
-            coins[i].connected = false;
+            (*m_coins)[coins[i]].connected = false;
             for (int j = i + 1; j < coins.size(); j++) {
-                coin c1 = coins[i];
-                coin c2 = coins[j];
+                coin c1 = (*m_coins)[coins[i]];
+                coin c2 = (*m_coins)[coins[j]];
                 b2Vec2 v1 = c1.wheel->GetPosition() - c2.wheel->GetPosition();
 
                 if (v1.Length() < proximityRadius) {
@@ -318,7 +320,7 @@ cycles::cycles(std::map<int, coin>& allCoins)
                 polygons.push_back(std::vector<b2Vec2>());
                 polygons[cp].push_back(v2[cy[0]]);
                 if (cy[0] < coins.size()) {
-                    coins[cy[0]].connected = true;
+					(*m_coins)[coins[cy[0]]].connected = true;
                 }
                 for (int i = 1; i < cy.size(); i++) {
                     //s += "," + cy[i];
@@ -327,7 +329,7 @@ cycles::cycles(std::map<int, coin>& allCoins)
 
                     polygons[cp].push_back(pos);
                     if (cy[i] < coins.size()) {
-                        coins[cy[i]].connected = true;
+						(*m_coins)[coins[cy[i]]].connected = true;
                         //coins[cy[i]].GetComponent<Multitag>().TagsSet.Add("connected");
                         //coins[cy[i]].GetComponent<Multitag>().TagsSet.Add(cp.ToString());
                     }
