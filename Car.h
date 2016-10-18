@@ -23,6 +23,7 @@
 #include <map>
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 
 #include "imgui.h"
 #include "graph.h"
@@ -119,6 +120,7 @@ public:
         ImGui::Separator();
         ImGui::Text("Mouse Position: (%.1f,%.1f)", ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y);
         ImGui::Text("Mouse Position in world : (%.2f,%.2f)", m_mouseWorld.x, m_mouseWorld.y);
+        ImGui::Text("%d", winConditionSatisfied());
         ImGui::End();
 
 
@@ -664,6 +666,11 @@ public:
             }
             ss << std::endl;
             coinsLog.AddLog(ss.str().c_str());
+        }
+
+        bool winConditionSatisfied()
+        {
+            return (coins.end()==std::find_if(coins.begin(),coins.end(),[](std::pair<int,coin> c1) -> bool {return (c1.second.player==1);}));
         }
 
 
