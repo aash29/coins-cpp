@@ -103,7 +103,8 @@ public:
         ImGui::Begin("Force", nullptr, ImVec2(0, 0), 0.3f,
                      ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
                      ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize);
-        ImGui::VSliderFloat("##force", ImVec2(50, 350), &m_force, 0.f, m_forceLeft);
+        ImGui::VSliderFloat("##force", ImVec2(50, 350), &m_force, 0.f, 1.0f);
+        m_force=std::min(m_force,m_forceLeft);
         ImGui::End();
 
 
@@ -116,7 +117,8 @@ public:
             return;
         }
 
-        ImGui::Text("Player: %i", m_currentPlayer);
+        //ImGui::Text("Player: %i", m_currentPlayer);
+        ImGui::Text("Turn: %i", m_currentTurn);
         ImGui::Separator();
         ImGui::Text("Mouse Position: (%.1f,%.1f)", ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y);
         ImGui::Text("Mouse Position in world : (%.2f,%.2f)", m_mouseWorld.x, m_mouseWorld.y);
@@ -443,7 +445,8 @@ public:
 
         void newTurn() {
             m_currentCoin = nullptr;
-            m_currentPlayer = (m_currentPlayer + 1) % 2;
+            //m_currentPlayer = (m_currentPlayer + 1) % 2;
+            m_currentTurn++;
             m_force = 1.0f;
             m_forceLeft = 1.0f;
         };
@@ -486,6 +489,16 @@ public:
             //selectedBots->clear();
         };
 
+        void launchCoin(const b2Vec2 &p) {
+            if (m_currentCoin) {
+                b2Vec2 f1 = m_force * m_forceMult * (p - m_currentCoin->wheel->GetPosition());
+                m_currentCoin->wheel->ApplyForceToCenter(f1, true);
+                m_forceLeft = m_forceLeft - m_force;
+                m_force = m_forceLeft;
+                m_currentCoin = nullptr;
+            }
+        };
+
         void MouseDown(const b2Vec2 &p) {
             //Test::MouseDown(p);
             ImGuiIO &io = ImGui::GetIO();
@@ -517,15 +530,12 @@ public:
                     if (body2Bot(body)->player == m_currentPlayer) {
                         m_currentCoin = body2Bot(body);
                     }
+                    else {
+                        launchCoin(p);
+                    }
                 }
                 else {
-                    if (m_currentCoin) {
-                        b2Vec2 f1 = m_force * m_forceMult * (p - m_currentCoin->wheel->GetPosition());
-                        m_currentCoin->wheel->ApplyForceToCenter(f1, true);
-                        m_forceLeft = m_forceLeft - m_force;
-                        m_force = m_forceLeft;
-						m_currentCoin = nullptr;
-                    }
+                    launchCoin(p);
                 }
             }
         }
@@ -576,8 +586,10 @@ public:
 
 
         void HighlightCurrentCoin() {
-            if (m_currentCoin)
+            if (m_currentCoin){
                 g_debugDraw.DrawCircle(m_currentCoin->wheel->GetWorldCenter(), 2.f, b2Color(1.f, 1.f, 1.f));
+                g_debugDraw.DrawSolidCircle(m_currentCoin->wheel->GetWorldCenter(), m_proximityRadius,b2Vec2(0.f, 0.f), b2Color(1.f, 1.f, 0.3f));
+            }
         };
 
         void DrawArrow() {
@@ -592,7 +604,7 @@ public:
         }
 
         void DrawCycles() {
-            cycles c2 = cycles(&coins);
+            cycles c2 = cycles(&coins,m_proximityRadius);
             static std::vector<std::vector<b2Vec2>> polygons;
             static std::vector<std::vector<int> > cyclesOut;
 
@@ -738,7 +750,7 @@ public:
 
             std::vector<std::vector<b2Vec2>> polygons;
             std::vector<std::vector<int> > cyclesOut;
-            cycles c2 = cycles(&coins);
+            cycles c2 = cycles(&coins, m_proximityRadius);
             std::vector<std::vector<b2Vec2> > c3 = c2.FindCycles(0, polygons, cyclesOut);
             for (auto &v : c3) {
                 printVector(v);
@@ -759,11 +771,15 @@ public:
         float32 m_force = 1.f;
         float32 m_forceLeft = 1.f;
         float32 m_forceMult = 2500.f;
+        float32 m_proximityRadius = 20.f;
+
 
         bool m_showMenu = true;
         bool m_showOpenDialog = false;
 
         int m_currentPlayer = 0;
+
+        int m_currentTurn = 1;
 
         AppLog coinsLog;
 

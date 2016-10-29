@@ -23,7 +23,7 @@ public:
 
     std::vector<b2Vec2> *allVertices = new std::vector<b2Vec2>[2];
 
-	cycles(std::map<int, coin> *allCoins);
+	cycles(std::map<int, coin> *allCoins,float radius);
 
 
     bool IsPointInPolygon(b2Vec2 p, std::vector<b2Vec2> polygon);
