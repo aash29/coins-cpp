@@ -92,7 +92,13 @@ public:
         if (ImGui::BeginMainMenuBar()) {
 
             if (ImGui::BeginMenu("File")) {
-                if (ImGui::MenuItem("Reload")) { loadLevel(); };
+                if (ImGui::MenuItem("Reload")) {
+
+                    coinsLog.AddLog("Reloading level \n");
+                    coinsLog.AddLog(m_currentLevel.c_str());
+                    coinsLog.AddLog("\n");
+                    loadLevel(m_currentLevel.c_str());
+                };
                 ImGui::MenuItem("Open", "Ctrl+O", &m_showOpenDialog);
                 ImGui::EndMenu();
             }
@@ -174,7 +180,7 @@ public:
                     while (dir.has_next) {
                         if (tinydir_readfile(&dir, &file) != -1) {
                             //ImGui::TextWrapped(file.name);
-                            coinsLog.AddLog(file.extension, "\n");
+                            //coinsLog.AddLog(file.extension, "\n");
                             if (!strcmp(file.extension, "cs")) {
                                 if (ImGui::Selectable(file.name, !strcmp(selected, file.name)))
                                     strcpy(selected, file.name);
@@ -203,8 +209,14 @@ public:
                 std::stringstream buffer;
                 buffer << t.rdbuf();
 
-                coinsLog.AddLog(buffer.str().c_str());
-                ImGui::TextWrapped(buffer.str().c_str());
+                static char bstr[2000];
+
+
+
+                strcpy(bstr,buffer.str().c_str());
+
+                //coinsLog.AddLog(buffer.str().c_str());
+                ImGui::TextWrapped(bstr);
 
 
                 /*
@@ -317,9 +329,19 @@ public:
 
     };
 
-    void loadLevel(char *name = "level.cs") {
+    void loadLevel(const char *name) {
 
         cleanup();
+
+        m_currentLevel = std::string(name);
+
+        coinsLog.AddLog("\n");
+        coinsLog.AddLog(name);
+        coinsLog.AddLog("\n");
+
+        coinsLog.AddLog(m_currentLevel.c_str());
+        coinsLog.AddLog("\n");
+
 
         nlohmann::json j;
 
@@ -400,7 +422,7 @@ public:
         //b2Body* root = m_world->CreateBody(&bd);
 
 
-        loadLevel();
+        loadLevel(m_currentLevel.c_str());
 
         m_currentCoin = &(coins.begin()->second);
     };
@@ -745,6 +767,8 @@ public:
     int m_currentPlayer = 0;
 
     int m_currentTurn = 1;
+
+    std::string m_currentLevel = "level.cs";
 
     AppLog coinsLog;
 
