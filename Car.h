@@ -112,7 +112,7 @@ public:
                      ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
                      ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize);
         ImGui::VSliderFloat("##force", ImVec2(50, 350), &m_force, 0.f, 1.0f);
-        m_force = std::min(m_force, m_forceLeft);
+        m_force = min(m_force, m_forceLeft);
         ImGui::End();
 
 
@@ -139,7 +139,7 @@ public:
             ImGui::SetNextWindowPos(ImVec2(10, 300), ImGuiSetCond_FirstUseEver);
             ImGui::Begin("Properties");
             ImGui::Text("Force multiplier");
-            ImGui::SliderFloat("##fm", &m_forceMult, 1000.f, 5000.f);
+            ImGui::SliderFloat("##fm", &m_forceMult, 10000.f, 50000.f);
             ImGui::Separator();
             if (m_currentCoin != nullptr) {
                 if (ImGui::CollapsingHeader("Current coin")) {
@@ -477,7 +477,11 @@ public:
 
     void launchCoin(const b2Vec2 &p) {
         if (m_currentCoin) {
-            b2Vec2 f1 = m_force * m_forceMult * (p - m_currentCoin->wheel->GetPosition());
+            b2Vec2 f1 =  (p - m_currentCoin->wheel->GetPosition());
+
+			f1.Normalize();
+			f1 = (m_force * m_forceMult) * f1;
+
             m_currentCoin->wheel->ApplyForceToCenter(f1, true);
             m_forceLeft = m_forceLeft - m_force;
             m_force = m_forceDefault;
@@ -757,7 +761,7 @@ public:
     float32 m_forceDefault = 0.333f;
     float32 m_force = m_forceDefault;
     float32 m_forceLeft = 1.f;
-    float32 m_forceMult = 2500.f;
+    float32 m_forceMult = 10000.f;
     float32 m_proximityRadius = 20.f;
 
 
