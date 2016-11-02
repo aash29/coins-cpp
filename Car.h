@@ -763,7 +763,7 @@ public:
     float32 m_force = m_forceDefault;
     float32 m_forceLeft = 1.f;
     float32 m_forceMult = 35000.f;
-    float32 m_proximityRadius = 20.f;
+    float32 m_proximityRadius = 25.f;
 
 
     bool m_showMenu = true;
