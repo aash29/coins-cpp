@@ -112,7 +112,7 @@ public:
                      ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
                      ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize);
         ImGui::VSliderFloat("##force", ImVec2(50, 350), &m_force, 0.f, 1.0f);
-        m_force = std::min(m_force, m_forceLeft);
+        m_force = min(m_force, m_forceLeft);
         ImGui::End();
 
 
@@ -496,6 +496,7 @@ public:
 
             m_mouseWorld = p;
 
+			coinsLog.AddLog("[%g,%g],\n", p.x, p.y);
 
             if (m_mouseJoint != NULL) {
                 return;
@@ -761,7 +762,7 @@ public:
     float32 m_forceDefault = 0.333f;
     float32 m_force = m_forceDefault;
     float32 m_forceLeft = 1.f;
-    float32 m_forceMult = 10000.f;
+    float32 m_forceMult = 35000.f;
     float32 m_proximityRadius = 20.f;
 
 
