@@ -112,7 +112,7 @@ public:
                      ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
                      ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize);
         ImGui::VSliderFloat("##force", ImVec2(50, 350), &m_force, 0.f, 1.0f);
-        m_force = min(m_force, m_forceLeft);
+        m_force = std::min(m_force, m_forceLeft);
         ImGui::End();
 
 
@@ -407,6 +407,71 @@ public:
 
 
                 }
+                if (s1 == "gears")
+                {
+
+                    std::vector<float> p1 = c["p1"];
+                    std::vector<float> p2 = c["p2"];
+
+
+                    b2RevoluteJoint* m_joint1;
+                    b2RevoluteJoint* m_joint2;
+                    b2PrismaticJoint* m_joint3;
+                    b2GearJoint* m_joint4;
+                    b2GearJoint* m_joint5;
+
+
+                    b2CircleShape circle1;
+                    circle1.m_radius = 1.0f;
+
+                    b2CircleShape circle2;
+                    circle2.m_radius = 2.0f;
+
+
+                    b2BodyDef bd1;
+                    bd1.type = b2_dynamicBody;
+                    bd1.position.Set(p1[0], p1[1]);
+                    b2Body* body1 = m_world->CreateBody(&bd1);
+                    body1->CreateFixture(&circle1, 5.0f);
+
+                    b2EdgeShape blade;
+                    blade.Set(b2Vec2(0.0f, 0.0f), b2Vec2(10.0f, 0.0f));
+                    body1->CreateFixture(&blade,1.0f);
+
+                    grounds.push_back(body1);
+
+                    b2RevoluteJointDef jd1;
+                    jd1.bodyA = m_ground;
+                    jd1.bodyB = body1;
+                    jd1.localAnchorA = m_ground->GetLocalPoint(bd1.position);
+                    jd1.localAnchorB = body1->GetLocalPoint(bd1.position);
+                    jd1.referenceAngle = body1->GetAngle() - m_ground->GetAngle();
+                    m_joint1 = (b2RevoluteJoint*)m_world->CreateJoint(&jd1);
+
+                    b2BodyDef bd2;
+                    bd2.type = b2_dynamicBody;
+                    bd2.position.Set(p2[0], p2[1]);
+                    b2Body* body2 = m_world->CreateBody(&bd2);
+                    body2->CreateFixture(&circle2, 5.0f);
+                    body2->CreateFixture(&blade,1.0f);
+                    grounds.push_back(body2);
+
+                    b2RevoluteJointDef jd2;
+                    jd2.Initialize(m_ground, body2, bd2.position);
+                    m_joint2 = (b2RevoluteJoint*)m_world->CreateJoint(&jd2);
+
+                    b2GearJointDef jd4;
+                    jd4.bodyA = body1;
+                    jd4.bodyB = body2;
+                    jd4.joint1 = m_joint1;
+                    jd4.joint2 = m_joint2;
+                    jd4.ratio = circle2.m_radius / circle1.m_radius;
+                    m_joint4 = (b2GearJoint*)m_world->CreateJoint(&jd4);
+
+
+
+
+                }
 
 
             }
@@ -417,10 +482,16 @@ public:
 
     Car() {
 
-        //b2BodyDef bd;
 
-        //b2Body* root = m_world->CreateBody(&bd);
-
+        {
+            b2BodyDef bd;
+            m_ground = m_world->CreateBody(&bd);
+/*
+            b2EdgeShape shape;
+            shape.Set(b2Vec2(50.0f, 0.0f), b2Vec2(-50.0f, 0.0f));
+            ground->CreateFixture(&shape, 0.0f);
+            */
+        }
 
         loadLevel(m_currentLevel.c_str());
 
@@ -766,6 +837,8 @@ public:
     float32 m_proximityRadius = 25.f;
 
 
+    b2Body* m_ground = nullptr;
+
     bool m_showMenu = true;
     bool m_showOpenDialog = false;
 
@@ -779,7 +852,7 @@ public:
 
     std::map<int, coin> coins = std::map<int, coin>();
     std::vector<b2Body*> grounds = std::vector<b2Body*>();
-
+    //std::vector<b2Body*> gears = std::vector<b2Body*>();
 };
 
 
