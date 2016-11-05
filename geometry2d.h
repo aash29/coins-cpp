@@ -130,6 +130,27 @@ public:
         return PointDistanceFromLine(point_, a, b);
     };
 
+    b2Vec2 closestPoint(b2Vec2 point_) {
+        b2Vec2 dir = b-a;
+        dir.Normalize();
+        float pr1 = b2Dot(dir,point_ - a);
+        return a+pr1*dir;
+    };
+
+    bool intersectsCircle(b2Vec2 cp, float r)
+    {
+        if ((a-cp).LengthSquared()<=r^2|| (b-cp).LengthSquared()<=r^2) {
+            return true;
+        }
+
+        if ((DistanceToPoint(cp)<=r) || (a-cp).LengthSquared()<=r^2|| (b-cp).LengthSquared()<=r^2) {
+            if (ContainsPoint(closestPoint(cp))){
+                return true;
+            }
+        }
+        return false;
+    }
+
     bool ContainsPoint(b2Vec2 point, float accuracy, ContainmentMethod containmentMethod) {
         float treshold = accuracy / 2.0f;
 

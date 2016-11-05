@@ -33,6 +33,8 @@ public:
     std::vector<std::vector<b2Vec2> > FindCycles(int player, std::vector<std::vector<b2Vec2>> &polygons,
                                                  std::vector<std::vector<int> > &cyclesOut);
 
+	bool IsCircleIntersectingPolygon(b2Vec2 p, std::vector<b2Vec2> polygon);
+
 	void deleteTrappedCoins(int player, std::vector<std::vector<b2Vec2>> cCycles);
 
 
