@@ -39,9 +39,11 @@ bool cycles::IsPointInPolygon(b2Vec2 p, std::vector<b2Vec2> polygon) {
 bool cycles::IsPolygonInPolygon(std::vector<b2Vec2> p1, std::vector<b2Vec2> p2) {
 
 
-    for (int i = 0; i < p1.size(); i++)
-        if (!(IsPointInPolygon(p1[i], p2) || (IsCircleIntersectingPolygon(p1[i], p2))))
-            return false;
+	for (int i = 0; i < p1.size(); i++) {
+		if (!(IsPointInPolygon(p1[i], p2) || (IsCircleIntersectingPolygon(p1[i], p2)))){
+			return false;
+		}
+	}
 
     return true;
 };
@@ -74,8 +76,7 @@ void cycles::deleteTrappedCoins(int player, std::vector<std::vector<b2Vec2>> cCy
 
     for (int j = 0; j < coinCycles[player % 2].size(); j++) {
         for (int k = 0; k < coinCycles[(player + 1) % 2].size(); k++) {
-            if ((IsPolygonInPolygon(coinCycles[player % 2][j], coinCycles[(player + 1) % 2][k])) &&
-                (std::find(protectedCycles.begin(), protectedCycles.end(), j) == protectedCycles.end())) {
+            if (IsPolygonInPolygon(coinCycles[player % 2][j], coinCycles[(player + 1) % 2][k])) {
                 for (auto i : cyclesList[player % 2][j]) {
                     (*m_coins)[i].dead = true;
                 }
