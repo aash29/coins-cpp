@@ -53,10 +53,12 @@ bool cycles::IsCircleIntersectingPolygon(b2Vec2 p, std::vector<b2Vec2> polygon){
             return true;
         }
     }
+	/*
     Segment s1 = Segment::SegmentWithPoints(polygon[polygon.size()-1], polygon[0]);
     if (s1.intersectsCircle(p,1.5f)) {
         return true;
     }
+	*/
     return false;
 
 };

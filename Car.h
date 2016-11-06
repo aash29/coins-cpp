@@ -124,7 +124,9 @@ public:
             ImGui::End();
             return;
         }
-
+		if (ImGui::IsMouseHoveringWindow()) {
+			ImGui::CaptureMouseFromApp(false);
+		}
         //ImGui::Text("Player: %i", m_currentPlayer);
         ImGui::Text("Turn: %i", m_currentTurn);
         ImGui::Separator();
@@ -563,6 +565,8 @@ public:
     void MouseDown(const b2Vec2 &p) {
         //Test::MouseDown(p);
         ImGuiIO &io = ImGui::GetIO();
+
+
         if (!io.WantCaptureMouse) {
 
             m_mouseWorld = p;
