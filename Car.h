@@ -112,7 +112,7 @@ public:
                      ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
                      ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize);
         ImGui::VSliderFloat("##force", ImVec2(50, 350), &m_force, 0.f, 1.0f);
-        m_force = std::min(m_force, m_forceLeft);
+        m_force = min(m_force, m_forceLeft);
         ImGui::End();
 
 
@@ -495,7 +495,7 @@ public:
 
         loadLevel(m_currentLevel.c_str());
 
-        m_currentCoin = &(coins.begin()->second);
+        //m_currentCoin = &(coins.begin()->second);
     };
 
     int symmHash(short int a, short int b) {

@@ -40,7 +40,7 @@ bool cycles::IsPolygonInPolygon(std::vector<b2Vec2> p1, std::vector<b2Vec2> p2) 
 
 
     for (int i = 0; i < p1.size(); i++)
-        if (!IsPointInPolygon(p1[i], p2))
+        if (!(IsPointInPolygon(p1[i], p2) || (IsCircleIntersectingPolygon(p1[i], p2))))
             return false;
 
     return true;
@@ -49,12 +49,12 @@ bool cycles::IsPolygonInPolygon(std::vector<b2Vec2> p1, std::vector<b2Vec2> p2) 
 bool cycles::IsCircleIntersectingPolygon(b2Vec2 p, std::vector<b2Vec2> polygon){
     for (int i=0;i<polygon.size()-1;i++) {
         Segment s1 = Segment::SegmentWithPoints(polygon[i], polygon[i+1]);
-        if (s1.intersectsCircle(p,1.f)) {
+        if (s1.intersectsCircle(p,1.5f)) {
             return true;
         }
     }
     Segment s1 = Segment::SegmentWithPoints(polygon[polygon.size()-1], polygon[0]);
-    if (s1.intersectsCircle(p,1.f)) {
+    if (s1.intersectsCircle(p,1.5f)) {
         return true;
     }
     return false;
@@ -88,7 +88,7 @@ void cycles::deleteTrappedCoins(int player, std::vector<std::vector<b2Vec2>> cCy
         int cp1 = c0.second.player;
         if (coinCycles[(player) % 2].size() > 0) {
             for (auto cc : coinCycles[(player) % 2]) {
-                if (IsPointInPolygon(c0.second.wheel->GetPosition(), cc)) {
+                if ((IsPointInPolygon(c0.second.wheel->GetPosition(), cc)) ) {
                     if ((cp1 == player)) {
                         //c0.second.connected=true;
                         m_coins->at(c0.first).connected = true;
@@ -105,7 +105,7 @@ void cycles::deleteTrappedCoins(int player, std::vector<std::vector<b2Vec2>> cCy
         int cp1 = c0.second.player;
         if (cCycles.size() > 0) {
             for (auto cc : cCycles) {
-                if (IsPointInPolygon(c0.second.wheel->GetPosition(), cc)) {
+                if (IsPointInPolygon(c0.second.wheel->GetPosition(), cc) || (IsCircleIntersectingPolygon(c0.second.wheel->GetPosition(), cc))) {
                     if ((cp1 == player) && (!c0.second.connected)) {
                         //c0.second.dead=true;
                         m_coins->at(c0.first).dead = true;

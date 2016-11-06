@@ -139,11 +139,11 @@ public:
 
     bool intersectsCircle(b2Vec2 cp, float r)
     {
-        if ((a-cp).LengthSquared()<=r^2|| (b-cp).LengthSquared()<=r^2) {
+        if (((a-cp).LengthSquared()<=r*r)|| ((b-cp).LengthSquared()<=r*r) ) {
             return true;
         }
 
-        if ((DistanceToPoint(cp)<=r) || (a-cp).LengthSquared()<=r^2|| (b-cp).LengthSquared()<=r^2) {
+        if (DistanceToPoint(cp)<=r) {
             if (ContainsPoint(closestPoint(cp))){
                 return true;
             }
