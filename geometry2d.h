@@ -143,11 +143,18 @@ public:
             return true;
         }
 
-        if (DistanceToPoint(cp)<=r) {
-            if (ContainsPoint(closestPoint(cp))){
-                return true;
-            }
+		if (DistanceToPoint(cp) <= r) {
+			b2Vec2 closest = closestPoint(cp);
+			float dp = (closest.x - a.x) * (b.x - a.x) + (closest.y - a.y)*(b.y - a.y);
+			float squaredlengthba = (b.x - a.x)*(b.x - a.x) + (b.y - a.y)*(b.y - a.y);
+			if ((dp > 0) && (dp < squaredlengthba)) {
+				return true;
+			};
+			//if (ContainsPoint(closestPoint(cp))){
+			//    return true;
+		//}
         }
+        
         return false;
     }
 

@@ -247,6 +247,10 @@ public:
 
 
         coinsLog.Draw("Log");
+
+
+
+
     }
 
 
@@ -620,6 +624,10 @@ public:
         sInterface();
 
         DrawCycles();
+
+		if (m_forceLeft < 0.002f) {
+			newTurn();
+		};
 
 
     }
