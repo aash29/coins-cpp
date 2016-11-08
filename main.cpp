@@ -288,13 +288,13 @@ static void sRestart() {
 
 //
 static void sSimulate() {
-    glEnable(GL_DEPTH_TEST);
+	glDisable(GL_DEPTH_TEST);
     test->Step(&settings);
 
     test->DrawTitle(entry->name);
 
     //((Car *) test)->plotGraphs();
-    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
 
     if (testSelection != testIndex) {
         testIndex = testSelection;
@@ -473,6 +473,7 @@ int main(int argc, char **argv) {
     }
 #endif
 
+	settings.drawShapes = false;
     g_debugDraw.Create();
     sCreateUI();
 

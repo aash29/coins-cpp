@@ -111,8 +111,10 @@ public:
         ImGui::Begin("Force", nullptr, ImVec2(0, 0), 0.3f,
                      ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
                      ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize);
-        ImGui::VSliderFloat("##force", ImVec2(50, 350), &m_force, 0.f, 1.0f);
-        m_force = min(m_force, m_forceLeft);
+		static float sliderValue;
+		sliderValue = m_forceLeft - m_force;
+        ImGui::VSliderFloat("##force", ImVec2(50, 350), &sliderValue, 0.f, 1.0f);
+        //m_force = min(m_force, m_forceLeft);
         ImGui::End();
 
 
@@ -277,7 +279,8 @@ public:
         b2BodyDef bd;
 
         bd.type = b2_dynamicBody;
-        bd.position.Set(x, y);
+		bd.bullet = true;
+
 
 
         b2FixtureDef fd;
@@ -514,7 +517,7 @@ public:
         m_currentCoin = nullptr;
         //m_currentPlayer = (m_currentPlayer + 1) % 2;
         m_currentTurn++;
-        m_force = m_forceDefault;
+        //m_force = m_forceDefault;
         m_forceLeft = 1.0f;
     };
 
@@ -545,6 +548,18 @@ public:
 
     void MouseMove(const b2Vec2 &p) {
         m_mouseWorld = p;
+
+		if (m_mode == AIM)
+		{
+			if (m_currentCoin) {
+				b2Vec2 f1 = (p - m_currentCoin->wheel->GetPosition());
+
+				m_force = min(f1.Length() / (3 * m_coinRadius), m_forceLeft);
+			}
+		};
+
+
+		//Test::MouseMove(p);
     }
 
     void RightMouseDown(const b2Vec2 &p) {
@@ -556,15 +571,23 @@ public:
         if (m_currentCoin) {
             b2Vec2 f1 =  (p - m_currentCoin->wheel->GetPosition());
 
+			m_force = min(f1.Length() /(3*m_coinRadius),m_forceLeft);
+
 			f1.Normalize();
+
+
 			f1 = (m_force * m_forceMult) * f1;
 
             m_currentCoin->wheel->ApplyForceToCenter(f1, true);
             m_forceLeft = m_forceLeft - m_force;
-            m_force = m_forceDefault;
+            m_force = 0.f;
             m_currentCoin = nullptr;
         }
     };
+
+	void MouseUp(const b2Vec2 &p) {
+		launchCoin(p);
+	};
 
     void MouseDown(const b2Vec2 &p) {
         //Test::MouseDown(p);
@@ -577,10 +600,11 @@ public:
 
 			coinsLog.AddLog("[%g,%g],\n", p.x, p.y);
 
+			/*
             if (m_mouseJoint != NULL) {
                 return;
             }
-
+			*/
 
             // Make a small box.
             b2AABB aabb;
@@ -595,18 +619,20 @@ public:
 
             if (callback.m_fixture) {
 
+				m_mode = AIM;
+
                 b2Body *body = callback.m_fixture->GetBody();
 
                 if (body2Bot(body)->player == m_currentPlayer) {
                     m_currentCoin = body2Bot(body);
                 }
-                else {
-                    launchCoin(p);
-                }
+                //else {
+                //    launchCoin(p);
+                // }
             }
-            else {
-                launchCoin(p);
-            }
+            //else {
+             //   launchCoin(p);
+           // }
         }
     }
 
@@ -617,7 +643,7 @@ public:
 
         HighlightCurrentCoin();
 
-        DrawArrow();
+		DrawArrow();
 
         DrawCoins();
 
@@ -661,21 +687,40 @@ public:
 
     void HighlightCurrentCoin() {
         if (m_currentCoin) {
-            g_debugDraw.DrawCircle(m_currentCoin->wheel->GetWorldCenter(), 2.f, b2Color(1.f, 1.f, 1.f));
+            g_debugDraw.DrawCircle(m_currentCoin->wheel->GetWorldCenter(), m_forceLeft*(3 * m_coinRadius), b2Color(1.f, 1.f, 1.f));
             g_debugDraw.DrawSolidCircle(m_currentCoin->wheel->GetWorldCenter(), m_proximityRadius, b2Vec2(0.f, 0.f),
                                         b2Color(1.f, 1.f, 0.3f));
         }
     };
 
     void DrawArrow() {
-        if (m_currentCoin)
-            g_debugDraw.DrawSegment(m_currentCoin->wheel->GetWorldCenter(), m_mouseWorld, b2Color(1.f, 1.f, 1.f));
+		if (m_currentCoin) {
+			b2Vec2 cc = m_currentCoin->wheel->GetWorldCenter();
+			b2Vec2 dir =  m_mouseWorld -cc;
+			dir.Normalize();
+			g_debugDraw.DrawSegment(cc, cc+m_force*(3 * m_coinRadius)*dir, b2Color(1.f, 1.f, 1.f));
+		}
     }
 
     void DrawCoins() {
         for (auto &kv : coins) {
             g_debugDraw.DrawSolidCircle(kv.second.wheel->GetPosition(), 1.5f, b2Vec2(0.f, 0.f), kv.second.color);
         }
+
+		for (b2Body* body = m_world->GetBodyList(); body; body = body->GetNext()) {
+			// Go through all fixtures in each body.
+			for (b2Fixture* fixture = body->GetFixtureList(); fixture; fixture = fixture->GetNext()) {
+				b2Shape* shape = fixture->GetShape();
+				// Check if it's polygon or circle. Uses different methods.
+				if (shape->GetType() == b2Shape::e_edge) {
+					b2EdgeShape* polygon = (b2EdgeShape*)shape;
+					//int numberOfVertices = polygon->GetVertexCount();
+					// Loop through all the vertices.
+					g_debugDraw.DrawSegment(polygon->m_vertex1, polygon->m_vertex2, b2Color(1.f, 1.f, 1.f));
+
+				}
+			}
+		}
     }
 
     void DrawCycles() {
@@ -842,12 +887,15 @@ public:
 
     coin *m_currentCoin;
 
-    float32 m_forceDefault = 0.333f;
-    float32 m_force = m_forceDefault;
+    //float32 m_forceDefault = 0.333f;
+	float32 m_force = 0;
     float32 m_forceLeft = 1.f;
     float32 m_forceMult = 35000.f;
     float32 m_proximityRadius = 25.f;
+	float32 m_coinRadius = 4.5f;
 
+	enum  Mode { AIM, STANDBY};
+	Mode m_mode = STANDBY;
 
     b2Body* m_ground = nullptr;
 
