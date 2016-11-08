@@ -288,13 +288,14 @@ static void sRestart() {
 
 //
 static void sSimulate() {
-	glDisable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST);
+	
     test->Step(&settings);
 
     test->DrawTitle(entry->name);
-
+	glDisable(GL_DEPTH_TEST);
     //((Car *) test)->plotGraphs();
-    glEnable(GL_DEPTH_TEST);
+    
 
     if (testSelection != testIndex) {
         testIndex = testSelection;
@@ -494,7 +495,8 @@ int main(int argc, char **argv) {
     double time1 = glfwGetTime();
     double frameTime = 0.0;
 
-    glClearColor(0.3f, 0.3f, 0.3f, 1.f);
+    //glClearColor(0.3f, 0.3f, 0.3f, 1.f);
+	glClearColor(0.03f, 0.2f, 0.45f, 1.f);
 
 
     while (!glfwWindowShouldClose(mainWindow)) {

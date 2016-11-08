@@ -641,11 +641,11 @@ public:
 
         Test::Step(settings);
 
-        HighlightCurrentCoin();
-
 		DrawArrow();
 
         DrawCoins();
+
+		HighlightCurrentCoin();
 
         sInterface();
 
