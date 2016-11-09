@@ -147,7 +147,7 @@ public:
 
     virtual void Step(Settings *settings);
 
-    virtual void Keyboard(int key) { B2_NOT_USED(key); }
+    virtual void Keyboard(int key, int mods) { B2_NOT_USED(key); }
 
     virtual void KeyboardUp(int key) { B2_NOT_USED(key); }
 

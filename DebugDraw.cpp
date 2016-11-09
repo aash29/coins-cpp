@@ -712,8 +712,8 @@ void DebugDraw::DrawSegment(const b2Vec2 &p1, const b2Vec2 &p2, const b2Color &c
 
 //
 void DebugDraw::DrawTransform(const b2Transform &xf) {
-    const float32 k_axisScale = 0.4f;
-    b2Color red(1.0f, 0.0f, 0.0f);
+    const float32 k_axisScale = 1.5f;
+    b2Color red(0.0f, 0.0f, 1.0f);
     b2Color green(0.0f, 1.0f, 0.0f);
     b2Vec2 p1 = xf.p, p2;
 

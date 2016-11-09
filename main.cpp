@@ -165,13 +165,13 @@ static void sKeyCallback(GLFWwindow *, int key, int scancode, int action, int mo
                 // Zoom in
                 g_camera.m_zoom = b2Max(0.9f * g_camera.m_zoom, 0.02f);
                 break;
-
+				/*
             case GLFW_KEY_R:
                 // Reset test
                 delete test;
                 test = entry->createFcn();
                 break;
-
+				*/
 
             case GLFW_KEY_SPACE:
                 // Pause
@@ -199,7 +199,7 @@ static void sKeyCallback(GLFWwindow *, int key, int scancode, int action, int mo
 
             default:
                 if (test) {
-                    test->Keyboard(key);
+                    test->Keyboard(key, mods);
                 }
         }
     }
@@ -207,7 +207,7 @@ static void sKeyCallback(GLFWwindow *, int key, int scancode, int action, int mo
         test->KeyboardUp(key);
     }
 	else if (action == GLFW_REPEAT) {
-		test->Keyboard(key);
+		test->Keyboard(key, mods);
 	}
     // else GLFW_REPEAT
 }
@@ -474,7 +474,8 @@ int main(int argc, char **argv) {
     }
 #endif
 
-	settings.drawShapes = false;
+	//settings.drawShapes = false;
+	//settings.drawCOMs = true;
     g_debugDraw.Create();
     sCreateUI();
 

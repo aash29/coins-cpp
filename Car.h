@@ -19,6 +19,8 @@
 #ifndef CAR_H
 #define CAR_H
 
+//#define DEBUG
+
 #include <vector>
 #include <map>
 #include <iostream>
@@ -92,7 +94,7 @@ public:
         if (ImGui::BeginMainMenuBar()) {
 
             if (ImGui::BeginMenu("File")) {
-                if (ImGui::MenuItem("Reload")) {
+                if (ImGui::MenuItem("Reload","Ctrl+R")) {
 
                     coinsLog.AddLog("Reloading level \n");
                     coinsLog.AddLog(m_currentLevel.c_str());
@@ -130,14 +132,19 @@ public:
 			ImGui::CaptureMouseFromApp(false);
 		}
         //ImGui::Text("Player: %i", m_currentPlayer);
-        ImGui::Text("Turn: %i", m_currentTurn);
+		ImGui::Text("Level: %s", m_currentLevel.c_str());
+		ImGui::Text("Turn: %i", m_currentTurn);
         ImGui::Separator();
-        ImGui::Text("Mouse Position: (%.1f,%.1f)", ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y);
-        ImGui::Text("Mouse Position in world : (%.2f,%.2f)", m_mouseWorld.x, m_mouseWorld.y);
-        ImGui::Text("%d", winConditionSatisfied());
+        //ImGui::Text("Mouse Position: (%.1f,%.1f)", ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y);
+		#ifdef DEBUG 
+			ImGui::Text("Mouse Position in world : (%.2f,%.2f)", m_mouseWorld.x, m_mouseWorld.y);
+		#endif	
+		if (winConditionSatisfied()) {
+			ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Level completed!");
+		}
         ImGui::End();
 
-
+#ifdef DEBUG
         if (m_showMenu) {
             ImGui::SetNextWindowSize(ImVec2(400, 200), ImGuiSetCond_FirstUseEver);
             ImGui::SetNextWindowPos(ImVec2(10, 300), ImGuiSetCond_FirstUseEver);
@@ -167,6 +174,7 @@ public:
 
             ImGui::End();
         }
+#endif
 
         if (m_showOpenDialog) {
             ImGui::SetNextWindowSize(ImVec2(500, 440), ImGuiSetCond_FirstUseEver);
@@ -213,7 +221,7 @@ public:
                 std::stringstream buffer;
                 buffer << t.rdbuf();
 
-                static char bstr[2000];
+                static char bstr[5000];
 
 
 
@@ -247,9 +255,9 @@ public:
             ImGui::End();
         }
 
-
+#ifdef DEBUG
         coinsLog.Draw("Log");
-
+#endif
 
 
 
@@ -343,6 +351,7 @@ public:
         cleanup();
 
         m_currentLevel = std::string(name);
+		m_currentTurn = 1;
 
         coinsLog.AddLog("\n");
         coinsLog.AddLog(name);
@@ -522,7 +531,7 @@ public:
     };
 
 
-    void Keyboard(int key) {
+    void Keyboard(int key, int mods) {
 
         ImGuiIO &io = ImGui::GetIO();
         if (!io.WantCaptureKeyboard) {
@@ -534,6 +543,18 @@ public:
                 case GLFW_KEY_E:
                     m_force = b2Max(m_force - 0.05f, 0.f);
                     break;
+
+				case GLFW_KEY_R:
+					if (mods== GLFW_MOD_CONTROL){
+						loadLevel(m_currentLevel.c_str());
+					};
+					break;
+
+				case GLFW_KEY_O:
+					if (mods == GLFW_MOD_CONTROL) {
+						m_showOpenDialog = !m_showOpenDialog;
+					};
+					break;
 
                 case GLFW_KEY_ENTER:
                     newTurn();
@@ -639,7 +660,6 @@ public:
 
     void Step(Settings *settings) {
 
-        Test::Step(settings);
 
 		DrawArrow();
 
@@ -650,6 +670,18 @@ public:
         sInterface();
 
         DrawCycles();
+
+		Test::Step(settings);
+
+		/*
+
+		b2Vec2 tr1[3] = { b2Vec2(-5.f,-5.f),b2Vec2(0.f,5.f),b2Vec2(5.f,-5.f) };
+
+		b2Vec2 tr2[3] = { b2Vec2(-5.f,5.f),b2Vec2(0.f,-5.f),b2Vec2(5.f,5.f) };
+
+		g_debugDraw.DrawSolidPolygon(tr1, 3, b2Color(0.5f, 0.0f, 0.0f, 0.3f));
+		g_debugDraw.DrawSolidPolygon(tr2, 3, b2Color(0.5f, 0.0f, 0.0f, 0.3f));
+		*/
 
 		if (m_forceLeft < 0.002f) {
 			newTurn();
@@ -687,7 +719,7 @@ public:
 
     void HighlightCurrentCoin() {
         if (m_currentCoin) {
-            g_debugDraw.DrawCircle(m_currentCoin->wheel->GetWorldCenter(), m_forceLeft*(3 * m_coinRadius), b2Color(1.f, 1.f, 1.f));
+			g_debugDraw.DrawCircle(m_currentCoin->wheel->GetWorldCenter(), m_forceLeft*(3 * m_coinRadius), b2Color(1.f, 1.f, 1.f));
             g_debugDraw.DrawSolidCircle(m_currentCoin->wheel->GetWorldCenter(), m_proximityRadius, b2Vec2(0.f, 0.f),
                                         b2Color(1.f, 1.f, 0.3f));
         }
@@ -706,7 +738,7 @@ public:
         for (auto &kv : coins) {
             g_debugDraw.DrawSolidCircle(kv.second.wheel->GetPosition(), 1.5f, b2Vec2(0.f, 0.f), kv.second.color);
         }
-
+		/*
 		for (b2Body* body = m_world->GetBodyList(); body; body = body->GetNext()) {
 			// Go through all fixtures in each body.
 			for (b2Fixture* fixture = body->GetFixtureList(); fixture; fixture = fixture->GetNext()) {
@@ -721,6 +753,7 @@ public:
 				}
 			}
 		}
+		*/
     }
 
     void DrawCycles() {
