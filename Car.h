@@ -575,9 +575,10 @@ public:
 			if (m_currentCoin) {
 				b2Vec2 f1 = (p - m_currentCoin->wheel->GetPosition());
 
-				m_force = min(f1.Length() / (3 * m_coinRadius), m_forceLeft);
+				m_force = std::min(f1.Length() / (3 * m_coinRadius), m_forceLeft);
 			}
 		};
+
 
 
 		//Test::MouseMove(p);
@@ -592,7 +593,7 @@ public:
         if (m_currentCoin) {
             b2Vec2 f1 =  (p - m_currentCoin->wheel->GetPosition());
 
-			m_force = min(f1.Length() /(3*m_coinRadius),m_forceLeft);
+			m_force = std::min(f1.Length() /(3*m_coinRadius),m_forceLeft);
 
 			f1.Normalize();
 

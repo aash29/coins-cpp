@@ -1,4 +1,5 @@
 /*
+/*
 * Copyright (c) 2006-2013 Erin Catto http://www.box2d.org
 *
 * This software is provided 'as-is', without any express or implied
@@ -439,6 +440,8 @@ int main(int argc, char **argv) {
 
     char title[64];
     sprintf(title, "Coins");
+
+    glfwWindowHint(GLFW_SAMPLES,16);
 
 
     mainWindow = glfwCreateWindow(g_camera.m_width, g_camera.m_height, title, NULL, NULL);
